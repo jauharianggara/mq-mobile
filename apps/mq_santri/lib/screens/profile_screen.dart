@@ -1,0 +1,100 @@
+import 'package:flutter/material.dart';
+import 'package:mq_shared/mq_shared.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../main.dart';
+import 'login_screen.dart';
+
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  Map<String, dynamic>? _user;
+
+  @override
+  void initState() { super.initState(); _load(); }
+
+  Future<void> _load() async {
+    try {
+      final me = await api.me();
+      setState(() => _user = me);
+    } catch (_) {}
+  }
+
+  Future<void> _logout() async {
+    await api.logout();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (_) => false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profil')),
+      body: _user == null
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  child: Text(
+                    (_user?['full_name'] ?? _user?['email'] ?? 'S')[0].toUpperCase(),
+                    style: const TextStyle(fontSize: 32, color: AppColors.primary, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _user?['full_name'] ?? 'Belum diisi',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  _user?['email'] ?? '',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                ),
+                const SizedBox(height: 8),
+                Center(child: StatusBadge(status: _user?['status'] ?? 'ACTIVE')),
+                const SizedBox(height: 24),
+                _tile(Icons.fact_check_outlined, 'Riwayat Setoran', () {}),
+                _tile(Icons.bookmark_outline, 'Bookmark', () {}),
+                _tile(Icons.notifications_outlined, 'Notifikasi', () {}),
+                _tile(Icons.settings_outlined, 'Pengaturan', () {}),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _logout,
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Keluar'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _tile(IconData icon, String label, VoidCallback onTap) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon, color: AppColors.primary),
+        title: Text(label),
+        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+        onTap: onTap,
+      ),
+    );
+  }
+}

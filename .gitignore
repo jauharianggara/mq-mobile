@@ -1,0 +1,8 @@
+**/node_modules/
+**/.dart_tool/
+**/.idea/
+**/build/
+**/*.iml
+**/.flutter-plugins*
+**/.metadata
+.env*

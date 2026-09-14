@@ -1,0 +1,17 @@
+name: mq_shared
+description: Shared package untuk MQ Santri & MQ Ustadz apps
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.4.0
+  shared_preferences: ^2.2.0
+  uuid: ^4.4.0
+
+flutter:
+  uses-material-design: true
