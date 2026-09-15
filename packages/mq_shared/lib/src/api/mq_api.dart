@@ -97,6 +97,12 @@ class MqApi {
     return res.data['data'];
   }
 
+  /// GET yang mengembalikan array data (bukan object).
+  Future<List<dynamic>> getList(String path, {Map<String, dynamic>? query}) async {
+    final res = await dio.get(path, queryParameters: query);
+    return (res.data['data'] ?? []) as List<dynamic>;
+  }
+
   Future<Map<String, dynamic>?> put(String path, {dynamic data}) async {
     final res = await dio.put(path, data: data);
     return res.data['data'];
@@ -159,4 +165,68 @@ class MqApi {
   Future<Map<String, dynamic>?> santriHome() => get('/me/home');
   Future<Map<String, dynamic>?> ustadzHome() => get('/ustadz/me/home');
   Future<Map<String, dynamic>?> appVersion(String appId) => get('/app/version', query: {'app_id': appId});
+
+  // ============ visits (Pesan Ustadz — Bagian V) ============
+  Future<List<dynamic>> visitServices() => getList('/visits/services');
+
+  Future<List<dynamic>> visitNearby(double lat, double lng, {int? serviceTypeId}) =>
+      getList('/visits/ustadz/nearby', query: {
+        'lat': lat,
+        'lng': lng,
+        if (serviceTypeId != null) 'service_type_id': serviceTypeId,
+      });
+
+  Future<Map<String, dynamic>?> visitCreate({
+    required int ustadzId,
+    required int serviceTypeId,
+    required String scheduledAt,
+    required double lat,
+    required double lng,
+    int? accuracyM,
+    required String addressLabel,
+    String? note,
+    required String idempotencyKey,
+  }) =>
+      post('/visits',
+          idempotencyKey: idempotencyKey,
+          data: {
+            'ustadz_id': ustadzId,
+            'service_type_id': serviceTypeId,
+            'scheduled_at': scheduledAt,
+            'lat': lat,
+            'lng': lng,
+            if (accuracyM != null) 'accuracy_m': accuracyM,
+            'address_label': addressLabel,
+            if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+          });
+
+  Future<({List<dynamic> items, String? nextCursor, bool hasMore})> visitList({String? cursor}) =>
+      getPage('/visits', query: {if (cursor != null) 'cursor': cursor});
+
+  Future<Map<String, dynamic>?> visitDetail(int id) => get('/visits/$id');
+  Future<Map<String, dynamic>?> visitPay(int id) => post('/visits/$id/pay');
+  Future<Map<String, dynamic>?> visitCancel(int id) => post('/visits/$id/cancel');
+
+  Future<Map<String, dynamic>?> visitReviewStatus(int id) => get('/visits/$id/review');
+  Future<Map<String, dynamic>?> visitSubmitReview(int id, {required int rating, String? comment}) =>
+      post('/visits/$id/review', data: {
+        'rating': rating,
+        if (comment != null && comment.trim().isNotEmpty) 'comment': comment.trim(),
+      });
+
+  Future<List<dynamic>> visitMessages(int id) async =>
+      (await getPage('/visits/$id/messages', query: {'limit': 100})).items.reversed.toList();
+
+  Future<Map<String, dynamic>?> visitSendMessage(int id, String body) =>
+      post('/visits/$id/messages', data: {'body': body});
+
+  Future<List<dynamic>> visitUstadzReviews(int ustadzId) async =>
+      (await getPage('/visits/ustadz/$ustadzId/reviews', query: {'limit': 20})).items;
+
+  Future<Map<String, dynamic>?> putMyLocation(double lat, double lng, {int? accuracyM}) =>
+      put('/me/location', data: {
+        'lat': lat,
+        'lng': lng,
+        if (accuracyM != null) 'accuracy_m': accuracyM,
+      });
 }

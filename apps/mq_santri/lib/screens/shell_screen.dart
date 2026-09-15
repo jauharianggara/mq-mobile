@@ -4,6 +4,7 @@ import 'home_screen.dart';
 import 'quran_screen.dart';
 import 'khatmil_screen.dart';
 import 'tanya_screen.dart';
+import 'visit_screen.dart';
 import 'profile_screen.dart';
 
 class ShellScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _ShellScreenState extends State<ShellScreen> {
     QuranScreen(),
     KhatmilScreen(),
     TanyaScreen(),
+    VisitScreen(),
     ProfileScreen(),
   ];
 
@@ -36,6 +38,7 @@ class _ShellScreenState extends State<ShellScreen> {
           NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'Quran'),
           NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people), label: 'Khatmil'),
           NavigationDestination(icon: Icon(Icons.question_answer_outlined), selectedIcon: Icon(Icons.question_answer), label: 'Tanya'),
+          NavigationDestination(icon: Icon(Icons.two_wheeler_outlined), selectedIcon: Icon(Icons.two_wheeler), label: 'Pesan'),
           NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
         ],
       ),

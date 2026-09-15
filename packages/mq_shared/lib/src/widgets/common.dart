@@ -33,7 +33,17 @@ class StatusBadge extends StatelessWidget {
         return const Color(0xFFEF4444);
       case 'REVISION':
       case 'EXPIRED':
+      case 'PAYMENT_EXPIRED':
+      case 'REVIEWED':
         return const Color(0xFF8B5CF6);
+      case 'REQUESTED':
+      case 'WAITING_CONFIRM':
+        return const Color(0xFF0EA5E9);
+      case 'CONFIRMED':
+        return const Color(0xFF16A34A);
+      case 'DECLINED':
+      case 'CANCELED':
+        return const Color(0xFFEF4444);
       default:
         return const Color(0xFF6B7280);
     }
@@ -120,17 +130,21 @@ class KpiCard extends StatelessWidget {
 /// Empty state sederhana.
 class EmptyState extends StatelessWidget {
   final IconData icon;
-  final String message;
+  final String? message;
+  final String? title;
+  final String? subtitle;
   final String? actionLabel;
   final VoidCallback? onAction;
 
   const EmptyState({
     super.key,
     required this.icon,
-    required this.message,
+    this.message,
+    this.title,
+    this.subtitle,
     this.actionLabel,
     this.onAction,
-  });
+  })  : assert(message != null || title != null, 'isi message atau title');
 
   @override
   Widget build(BuildContext context) {
@@ -143,12 +157,31 @@ class EmptyState extends StatelessWidget {
             Icon(icon, size: 48, color: Theme.of(context).colorScheme.outline),
             const SizedBox(height: 12),
             Text(
-              message,
+              title ?? message ?? '',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
               ),
             ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                subtitle!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).hintColor,
+                ),
+              ),
+            ],
+            if (subtitle == null && message != null && title != null)
+              Text(
+                message!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).hintColor,
+                ),
+              ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 16),
               ElevatedButton(onPressed: onAction, child: Text(actionLabel!)),
