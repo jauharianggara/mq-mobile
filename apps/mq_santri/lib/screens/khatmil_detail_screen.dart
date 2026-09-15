@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
 
 import '../main.dart';
+import '../widgets/khatmil_progress_dialog.dart';
+import 'khatmil_reader_screen.dart';
 
 class KhatmilDetailScreen extends StatefulWidget {
   final dynamic campaignId;
@@ -63,48 +65,104 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
     }
   }
 
-  Future<void> _postProgress(Map<dynamic, dynamic> assignment) async {
-    final pagesCtrl = TextEditingController(text: assignment['pages_read'].toString());
-    final minutesCtrl = TextEditingController(text: assignment['minutes_read'].toString());
+  void _openReader(Map<dynamic, dynamic> a) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => KhatmilReaderScreen(assignment: a)))
+        .then((_) => _load());
+  }
 
-    final confirmed = await showDialog<bool>(
+  void _openManual(Map<dynamic, dynamic> a) {
+    showKhatmilManualProgress(context, assignment: a, onSaved: _load);
+  }
+
+  /// Bottom sheet info juz — nama PEMILIK + posisi + aksi (plan F3).
+  void _showJuzSheet(dynamic j) {
+    final status = j['status'];
+    final isMine = (_myAssignments ?? []).any((a) => a['juz'] == j['juz'] && a['status'] != 'COMPLETED');
+    final mine = (_myAssignments ?? []).cast<Map<dynamic, dynamic>?>().firstWhere((a) => a!['juz'] == j['juz'], orElse: () => null);
+    showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Progress Juz ${assignment['juz']}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: pagesCtrl,
-              decoration: const InputDecoration(labelText: 'Halaman dibaca (1-22)'),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: minutesCtrl,
-              decoration: const InputDecoration(labelText: 'Menit membaca'),
-              keyboardType: TextInputType.number,
-            ),
-          ],
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text('Juz ${j['juz']}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                  const SizedBox(width: 8),
+                  if (status == 'COMPLETED')
+                    StatusBadge(status: 'COMPLETED')
+                  else if (status != null)
+                    StatusBadge(status: status)
+                  else
+                    Text('kosong', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (status == null) ...[
+                Text('Belum diklaim siapa pun.', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+                if (_joined)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: ElevatedButton.icon(
+                      onPressed: () { Navigator.pop(ctx); _claimJuz(j['juz'] as int); },
+                      icon: const Icon(Icons.add_circle_outline, size: 18),
+                      label: const Text('Klaim Juz Ini'),
+                    ),
+                  ),
+              ] else ...[
+                Text(
+                  isMine ? 'Dipegang: Anda' : 'Dipegang: ${j['owner_name'] ?? '—'}',
+                  style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                ),
+                if (status != 'COMPLETED') ...[
+                  if (j['current_surah'] != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        'Posisi bacaan: QS ${j['current_surah']}:${j['current_ayah']} · ${j['progress_pct'] ?? 0}%',
+                        style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text('Belum ada laporan posisi bacaan', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                    ),
+                ] else if (j['completed_at'] != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text('Selesai & terverifikasi: ${j['completed_at'].toString().substring(0, 10)}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                  ),
+                if (isMine && mine != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () { Navigator.pop(ctx); _openReader(mine); },
+                            icon: const Icon(Icons.play_arrow, size: 18),
+                            label: const Text('Lanjut Baca'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          onPressed: () { Navigator.pop(ctx); _openManual(mine); },
+                          style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 14)),
+                          child: const Text('✍️'),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ],
+          ),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Simpan')),
-        ],
       ),
     );
-
-    if (confirmed != true) return;
-    try {
-      final d = await api.post('/khatmil/assignments/${assignment['id']}/progress', data: {
-        'pages_read': int.tryParse(pagesCtrl.text) ?? 0,
-        'minutes_read': int.tryParse(minutesCtrl.text) ?? 0,
-      });
-      _showSnack('Juz ${d?['juz']}: ${d?['status']}', success: true);
-      _load();
-    } catch (e) {
-      _showSnack(_errMsg(e));
-    }
   }
 
   void _showSnack(String msg, {bool success = false}) {
@@ -137,42 +195,9 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
                   child: ListView(
                     padding: const EdgeInsets.all(12),
                     children: [
-                      // Info card
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('${_detail!['participants']} peserta'),
-                                  Text('${_detail!['juz_completed']}/30 juz selesai'),
-                                  Text('${_detail!['progress_pct']}%'),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: LinearProgressIndicator(
-                                  value: (_detail!['progress_pct'] as num).toDouble() / 100,
-                                  backgroundColor: Colors.grey[200],
-                                  color: AppColors.primary,
-                                  minHeight: 8,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Min. ${_detail!['min_minutes_per_juz']} menit per juz · ${_detail!['mode'] == 'PARALLEL' ? 'Paralel' : 'Bergiliran'}',
-                                style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      _progressStrip(),
                       const SizedBox(height: 12),
 
-                      // Join / Claim buttons
                       if (!_joined)
                         ElevatedButton.icon(
                           onPressed: _join,
@@ -180,29 +205,8 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
                           label: const Text('Join Campaign'),
                         )
                       else ...[
-                        // My juz cards
-                        ...(_myAssignments ?? []).map<Widget>((a) {
-                          final isCompleted = a['status'] == 'COMPLETED';
-                          return Card(
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: isCompleted ? AppColors.success.withValues(alpha: 0.15) : AppColors.gold.withValues(alpha: 0.15),
-                                child: Text('J${a['juz']}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isCompleted ? AppColors.success : AppColors.gold)),
-                              ),
-                              title: Text('Juz ${a['juz']}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                              subtitle: Text('${a['pages_read']}/22 hal · ${a['minutes_read']} mnt · ${a['verification']}'),
-                              trailing: isCompleted
-                                  ? const Icon(Icons.check_circle, color: AppColors.success)
-                                  : ElevatedButton(
-                                      onPressed: () => _postProgress(a),
-                                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6)),
-                                      child: const Text('Update', style: TextStyle(fontSize: 12)),
-                                    ),
-                            ),
-                          );
-                        }),
+                        ...(_myAssignments ?? []).cast<Map<dynamic, dynamic>>().map<Widget>(_myJuzCard),
                         const SizedBox(height: 8),
-                        // Claim button
                         ElevatedButton.icon(
                           onPressed: () => _claimJuz(),
                           icon: const Icon(Icons.add_circle_outline),
@@ -210,15 +214,16 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Atau tap juz kosong di peta untuk klaim juz tertentu',
+                          'Atau tap juz di peta untuk info & klaim',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                         ),
                       ],
                       const SizedBox(height: 16),
 
-                      // Juz map (30 grid)
                       Text('Peta Juz', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 4),
+                      Text('Tap juz utk lihat pemilik & posisi', style: TextStyle(fontSize: 11, color: Colors.grey[600])),
                       const SizedBox(height: 8),
                       _juzMap(),
                     ],
@@ -227,6 +232,108 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
     );
   }
 
+  /// Strip progres campaign (plan F3) — bar + angka ringkas.
+  Widget _progressStrip() {
+    final d = _detail!;
+    final total = 30 * ((d['target_khataman'] as num? ?? 1).toInt());
+    final done = (d['juz_completed'] as num).toInt();
+    final pct = (d['progress_pct'] as num).toDouble();
+    final period = [
+      d['period_start'],
+      d['period_end'],
+    ].whereType<String>().where((s) => s.isNotEmpty).join(' – ');
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('${d['participants']} peserta', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text('$done/$total juz · ${pct % 1 == 0 ? pct.toInt() : pct}%', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.primary)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: (pct / 100).clamp(0.0, 1.0),
+                backgroundColor: Colors.grey[200],
+                color: AppColors.primary,
+                minHeight: 8,
+              ),
+            ),
+            if (period.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(period, style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Kartu "Juz Saya" — posisi QS + Lanjut Baca + input manual (plan F3).
+  Widget _myJuzCard(Map<dynamic, dynamic> a) {
+    final isCompleted = a['status'] == 'COMPLETED';
+    final cs = a['current_surah'];
+    final ca = a['current_ayah'];
+    final read = a['read_ayat'];
+    final total = (a['juz_total_ayat'] as num?)?.toInt() ?? 0;
+    final sisa = (cs != null && read != null) ? total - (read as num).toInt() : null;
+    final pct = a['progress_pct'];
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: isCompleted ? AppColors.success.withValues(alpha: 0.15) : AppColors.gold.withValues(alpha: 0.15),
+              child: Text('J${a['juz']}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isCompleted ? AppColors.success : AppColors.gold)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Juz ${a['juz']}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 2),
+                  Text(
+                    isCompleted
+                        ? 'Selesai — terverifikasi'
+                        : cs != null
+                            ? 'QS $cs:$ca · ${pct ?? 0}%' + (sisa != null && sisa > 0 ? ' · sisa $sisa ayat' : '')
+                            : 'Belum ada laporan posisi',
+                    style: TextStyle(fontSize: 11.5, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+            if (isCompleted)
+              const Icon(Icons.check_circle, color: AppColors.success)
+            else ...[
+              ElevatedButton.icon(
+                onPressed: () => _openReader(a),
+                icon: const Icon(Icons.play_arrow, size: 16),
+                label: const Text('Baca', style: TextStyle(fontSize: 12)),
+                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4)),
+              ),
+              IconButton(
+                onPressed: () => _openManual(a),
+                icon: Icon(Icons.edit_note, color: Colors.grey[600]),
+                tooltip: 'Input manual (mushaf fisik)',
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Peta juz — juz_map v2: COMPLETED hijau (fix), aktif oranye, milik saya emas, kosong abu.
   Widget _juzMap() {
     final juzMap = (_detail!['juz_map'] ?? []) as List;
     return Card(
@@ -247,11 +354,10 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
             final status = j['status'];
             final isCompleted = status == 'COMPLETED';
             final isActive = status == 'ASSIGNED' || status == 'IN_PROGRESS';
-            final isEmpty = status == null;
-            final isMine = (_myAssignments ?? []).any((a) => a['juz'] == j['juz']);
+            final isMine = (_myAssignments ?? []).any((a) => a['juz'] == j['juz'] && a['status'] != 'COMPLETED');
 
             return GestureDetector(
-              onTap: isEmpty && _joined ? () => _claimJuz(j['juz']) : null,
+              onTap: () => _showJuzSheet(j),
               child: Container(
                 decoration: BoxDecoration(
                   color: isCompleted
@@ -259,7 +365,7 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
                       : isActive
                           ? AppColors.warning.withValues(alpha: 0.2)
                           : isMine
-                              ? AppColors.gold.withValues(alpha: 0.15)
+                              ? AppColors.gold.withValues(alpha: 0.18)
                               : Colors.grey[100],
                   borderRadius: BorderRadius.circular(6),
                   border: isMine ? Border.all(color: AppColors.gold, width: 2) : null,

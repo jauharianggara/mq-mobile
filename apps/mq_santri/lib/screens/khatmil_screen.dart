@@ -61,7 +61,12 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
                               child: Text('J${a['juz']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.gold)),
                             ),
                             title: Text(a['campaign_name'], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                            subtitle: Text('${a['pages_read']}/22 hal · ${a['minutes_read']} mnt'),
+                            subtitle: Text(
+                              a['current_surah'] != null
+                                  ? 'QS ${a['current_surah']}:${a['current_ayah']} · ${a['progress_pct'] ?? 0}% · sisa ${((a['juz_total_ayat'] ?? 0) as num).toInt() - ((a['read_ayat'] ?? 0) as num).toInt()} ayat'
+                                  : 'Juz ${a['juz']} · belum ada laporan posisi',
+                              style: const TextStyle(fontSize: 11.5),
+                            ),
                             trailing: StatusBadge(status: a['status']),
                             onTap: () async {
                               await Navigator.push(context, MaterialPageRoute(builder: (_) => KhatmilDetailScreen(campaignId: a['campaign_id'])));
@@ -113,7 +118,8 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                '${c['mode'] == 'PARALLEL' ? 'Paralel' : 'Bergiliran'} · ${c['participants']} peserta · min. ${c['min_minutes_per_juz']} mnt/juz',
+                '${c['mode'] == 'PARALLEL' ? 'Paralel' : 'Bergiliran'} · ${c['participants']} peserta'
+                '${(c['period_start'] as String?) != null && (c['period_start'] as String).isNotEmpty ? ' · ${c['period_start']}${(c['period_end'] as String?) != null && (c['period_end'] as String).isNotEmpty ? '–${c['period_end']}' : ''}' : ''}',
                 style: TextStyle(fontSize: 11, color: Colors.grey[600]),
               ),
               const SizedBox(height: 10),
