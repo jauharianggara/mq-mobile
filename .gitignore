@@ -6,3 +6,4 @@
 **/.flutter-plugins*
 **/.metadata
 .env*
+**/android/key.properties
