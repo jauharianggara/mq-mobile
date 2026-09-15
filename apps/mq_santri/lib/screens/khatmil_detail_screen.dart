@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
 
 import '../main.dart';
+import 'khatmil_leaderboard_screen.dart';
 import 'khatmil_manual_progress_screen.dart';
 import 'khatmil_reader_screen.dart';
 
@@ -186,7 +187,19 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_detail?['name'] ?? 'Khatmil')),
+      appBar: AppBar(
+        title: Text(_detail?['name'] ?? 'Khatmil'),
+        actions: [
+          IconButton(
+            icon: const Text('🏆', style: TextStyle(fontSize: 20)),
+            tooltip: 'Peringkat',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => KhatmilLeaderboardScreen(campaignId: widget.campaignId)),
+            ),
+          ),
+        ],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
