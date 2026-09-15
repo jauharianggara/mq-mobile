@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
 
 import '../main.dart';
+import 'notification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -40,14 +41,20 @@ class _HomeScreenState extends State<HomeScreen> {
           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
         ),
         actions: [
-          if ((_data?['notification_unread'] ?? 0) > 0)
-            Badge(
-              label: Text('${_data!['notification_unread']}'),
-              child: const Icon(Icons.notifications_outlined, color: AppColors.onPrimary),
-            )
-          else
-            const Icon(Icons.notifications_outlined, color: AppColors.onPrimary),
-          const SizedBox(width: 12),
+          IconButton(
+            tooltip: 'Notifikasi',
+            onPressed: () async {
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
+              _load(); // refresh badge setelah balik
+            },
+            icon: ((_data?['notification_unread'] ?? 0) > 0)
+                ? Badge(
+                    label: Text('${_data!['notification_unread']}'),
+                    child: const Icon(Icons.notifications_outlined, color: AppColors.onPrimary),
+                  )
+                : const Icon(Icons.notifications_outlined, color: AppColors.onPrimary),
+          ),
+          const SizedBox(width: 4),
         ],
       ),
       body: _loading
