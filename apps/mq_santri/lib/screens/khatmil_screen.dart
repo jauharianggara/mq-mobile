@@ -33,6 +33,7 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
         _loading = false;
       });
     } catch (e) {
+      debugPrint('KHATMIL LOAD ERROR: $e');
       setState(() { _error = 'Gagal memuat'; _loading = false; });
     }
   }

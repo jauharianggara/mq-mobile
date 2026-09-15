@@ -5,13 +5,17 @@ import 'package:flutter/foundation.dart';
 /// Semua request relatif ke /api/v1 (proxy mq-admin atau langsung mq-api).
 class MqApi {
   static const prodBase = 'https://mq-api.jagodigital.online/api/v1';
+  /// Hanya aktif jika di-explicit lewat --dart-define=MQ_DEV_BASE=http://10.0.2.2:8290/api/v1
+  /// (utk developer uji lokal di EMULATOR). Perangkat fisik & rilis selalu prod.
+  static const _devBaseOverride = String.fromEnvironment('MQ_DEV_BASE', defaultValue: '');
   static const devBase = 'http://10.0.2.2:8290/api/v1'; // Android emulator
 
   late final Dio dio;
   String? _accessToken;
   String? _refreshToken;
 
-  String get baseUrl => kReleaseMode ? prodBase : devBase;
+  String get baseUrl =>
+      (!kReleaseMode && _devBaseOverride.isNotEmpty) ? _devBaseOverride : prodBase;
 
   String? get accessToken => _accessToken;
   String? get refreshToken => _refreshToken;
@@ -85,7 +89,9 @@ class MqApi {
 
   // ============ helpers ============
 
-  Future<Map<String, dynamic>?> get(String path, {Map<String, dynamic>? query}) async {
+  /// GET generik — data bisa OBJECT atau ARRAY (endpoint list mengembalikan array;
+  /// cast kaku ke Map bikin runtime-error diam-diam di screen list).
+  Future<dynamic> get(String path, {Map<String, dynamic>? query}) async {
     final res = await dio.get(path, queryParameters: query);
     return res.data['data'];
   }
@@ -161,10 +167,10 @@ class MqApi {
     clearTokens();
   }
 
-  Future<Map<String, dynamic>?> me() => get('/me');
-  Future<Map<String, dynamic>?> santriHome() => get('/me/home');
-  Future<Map<String, dynamic>?> ustadzHome() => get('/ustadz/me/home');
-  Future<Map<String, dynamic>?> appVersion(String appId) => get('/app/version', query: {'app_id': appId});
+  Future<dynamic> me() => get('/me');
+  Future<dynamic> santriHome() => get('/me/home');
+  Future<dynamic> ustadzHome() => get('/ustadz/me/home');
+  Future<dynamic> appVersion(String appId) => get('/app/version', query: {'app_id': appId});
 
   // ============ visits (Pesan Ustadz — Bagian V) ============
   Future<List<dynamic>> visitServices() => getList('/visits/services');
@@ -203,11 +209,11 @@ class MqApi {
   Future<({List<dynamic> items, String? nextCursor, bool hasMore})> visitList({String? cursor}) =>
       getPage('/visits', query: {if (cursor != null) 'cursor': cursor});
 
-  Future<Map<String, dynamic>?> visitDetail(int id) => get('/visits/$id');
+  Future<dynamic> visitDetail(int id) => get('/visits/$id');
   Future<Map<String, dynamic>?> visitPay(int id) => post('/visits/$id/pay');
   Future<Map<String, dynamic>?> visitCancel(int id) => post('/visits/$id/cancel');
 
-  Future<Map<String, dynamic>?> visitReviewStatus(int id) => get('/visits/$id/review');
+  Future<dynamic> visitReviewStatus(int id) => get('/visits/$id/review');
   Future<Map<String, dynamic>?> visitSubmitReview(int id, {required int rating, String? comment}) =>
       post('/visits/$id/review', data: {
         'rating': rating,
@@ -231,7 +237,7 @@ class MqApi {
       });
 
   // ---- ustadz side ----
-  Future<Map<String, dynamic>?> ustadzVisitSettings() => get('/ustadz/visits/settings');
+  Future<dynamic> ustadzVisitSettings() => get('/ustadz/visits/settings');
   Future<Map<String, dynamic>?> ustadzPutVisitSettings({required bool isAccepting, required int maxActiveVisits}) =>
       put('/ustadz/visits/settings', data: {
         'is_accepting': isAccepting,
@@ -257,7 +263,7 @@ class MqApi {
   Future<void> ustadzDeleteVisitService(int serviceTypeId) async =>
       dio.delete('/ustadz/visit/services/$serviceTypeId');
 
-  Future<Map<String, dynamic>?> ustadzMyVisits() => get('/ustadz/visits');
+  Future<dynamic> ustadzMyVisits() => get('/ustadz/visits');
   Future<List<dynamic>> ustadzRequesterReviews(int visitId) async =>
       (await getPage('/ustadz/visits/$visitId/requester-reviews', query: {'limit': 20})).items;
   Future<Map<String, dynamic>?> ustadzVisitConfirm(int id) => post('/ustadz/visits/$id/confirm');
