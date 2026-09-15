@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mq_shared/mq_shared.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 
@@ -17,7 +18,7 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
   Map<String, dynamic>? _surahInfo;
   bool _loading = true;
   String? _error;
-  bool _showTranslation = true;
+  bool _showTranslation = false; // default tersembunyi — preferensi permanen reader_show_translation
 
   // Audio
   AudioPlayer? _player;
@@ -35,7 +36,15 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
   @override
   void initState() {
     super.initState();
+    _loadShowTranslation();
     _load();
+  }
+
+  Future<void> _loadShowTranslation() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() => _showTranslation = prefs.getBool('reader_show_translation') ?? false);
+    }
   }
 
   @override
@@ -166,7 +175,12 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
           IconButton(
             icon: Icon(_showTranslation ? Icons.translate : Icons.translate_outlined),
             tooltip: 'Terjemahan',
-            onPressed: () => setState(() => _showTranslation = !_showTranslation),
+            onPressed: () {
+              final v = !_showTranslation;
+              setState(() => _showTranslation = v);
+              SharedPreferences.getInstance()
+                  .then((p) => p.setBool('reader_show_translation', v));
+            },
           ),
         ],
       ),
@@ -298,18 +312,28 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                       textDirection: TextDirection.rtl,
                     ),
                   ),
-                  // Translation
-                  if (_showTranslation && ayah['translation'] != null) ...[
-                    const Divider(height: 16),
-                    Text(
-                      ayah['translation'],
-                      style: TextStyle(
-                        fontSize: 13,
-                        height: 1.6,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                  ],
+                  // Translation — default tersembunyi, toggle AppBar (preferensi permanen)
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.linear,
+                    alignment: Alignment.topCenter,
+                    child: _showTranslation && ayah['translation'] != null
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Divider(height: 16),
+                              Text(
+                                ayah['translation'],
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  height: 1.6,
+                                  color: Colors.grey[800],
+                                ),
+                              ),
+                            ],
+                          )
+                        : const SizedBox(width: double.infinity),
+                  ),
                 ],
               ),
             ),
