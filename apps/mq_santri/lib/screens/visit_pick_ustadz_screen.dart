@@ -6,7 +6,7 @@ import '../main.dart';
 import 'visit_status_screen.dart';
 
 /// Daftar ustadz terdekat (radius global admin) — santri pilih sendiri (keputusan user #3).
-/// Response TIDAK berisi koordinat ustadz (privacy by design).
+/// Tap kartu = halaman profil penuh (bukan popup). Response TIDAK berisi koordinat ustadz.
 class VisitPickUstadzScreen extends StatefulWidget {
   final int serviceTypeId;
   final DateTime schedule;
@@ -35,7 +35,6 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
   List<dynamic> _ustadz = [];
   bool _loading = true;
   String? _error;
-  bool _booking = false;
 
   @override
   void initState() {
@@ -70,102 +69,16 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
         '${u.hour.toString().padLeft(2, '0')}:${u.minute.toString().padLeft(2, '0')}:00Z';
   }
 
-  Future<void> _showDetail(Map<String, dynamic> u) async {
-    // bottom sheet: profil ringkas + review + tombol pesan
-    final reviews = await api.visitUstadzReviews(u['ustadz_id'] as int).catchError((_) => <dynamic>[]);
-    if (!mounted) return;
+  int _tarifOf(Map<String, dynamic> u) {
     final tarif = (u['services'] as List<dynamic>? ?? [])
         .cast<Map<String, dynamic>>()
-        .firstWhere((s) => s['service_type_id'] == widget.serviceTypeId, orElse: () => <String, dynamic>{});
-    final price = (tarif['price_amount'] as num?)?.toInt() ?? 0;
-    final dur = (tarif['duration_minutes'] as num?)?.toInt() ?? 60;
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.55,
-        builder: (ctx, _) => ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  child: Text((u['full_name'] as String? ?? 'U')[0].toUpperCase()),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(u['full_name'] as String? ?? 'Ustadz',
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
-                      Text('${(u['distance_km'] as num?)?.toStringAsFixed(1)} km dari lokasi Anda',
-                          style: const TextStyle(fontSize: 13)),
-                    ],
-                  ),
-                ),
-                _ratingBadge(u),
-              ],
-            ),
-            const Divider(height: 24),
-            _row(Icons.sell_outlined, 'Tarif', 'Rp ${_rp(price)} • $dur menit'),
-            const SizedBox(height: 8),
-            const Text('Penilaian santri lain', style: TextStyle(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            if (reviews.isEmpty)
-              const Text('Belum ada penilaian.', style: TextStyle(fontSize: 13))
-            else
-              ...reviews.take(10).map<Widget>((r) {
-                final m = r as Map<String, dynamic>;
-                return ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading: Text('★${m['rating']}', style: const TextStyle(color: Color(0xFFC9A227), fontWeight: FontWeight.w700)),
-                  title: Text(m['comment'] ?? '(tanpa catatan)', style: const TextStyle(fontSize: 13)),
-                  subtitle: Text('oleh ${m['reviewer_first_name']}', style: const TextStyle(fontSize: 11)),
-                );
-              }),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: () => _book(u, price),
-              icon: const Icon(Icons.request_quote_outlined),
-              label: Text('Pesan & Bayar Rp ${_rp(price)}'),
-            ),
-          ],
-        ),
-      ),
-    );
+        .where((s) => s['service_type_id'] == widget.serviceTypeId)
+        .toList();
+    return tarif.isEmpty ? 0 : (tarif.first['price_amount'] as num?)?.toInt() ?? 0;
   }
 
-  Widget _ratingBadge(Map<String, dynamic> u) {
-    final avg = u['rating_avg'];
-    final count = (u['rating_count'] as num?)?.toInt() ?? 0;
-    if (avg == null || count == 0) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.grey.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Text('Baru', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-      );
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFC9A227).withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text('★ ${(avg as num).toStringAsFixed(1)} ($count)',
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF8a6d1a))),
-    );
-  }
-
-  Future<void> _book(Map<String, dynamic> u, int price) async {
-    Navigator.pop(context); // tutup sheet
-    setState(() => _booking = true);
+  Future<void> _book(Map<String, dynamic> u) async {
+    setState(() => _loading = true);
     try {
       final d = await api.visitCreate(
         ustadzId: u['ustadz_id'] as int,
@@ -182,12 +95,13 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
       final visitId = d?['visit']?['id'] as int?;
       final invoiceUrl = d?['invoice_url'] as String?;
       if (visitId == null) throw 'gagal';
-      // langsung ke status screen (bayar di sana)
-      Navigator.pushReplacement(context,
+      // tutup halaman profil + daftar ustadz, langsung ke status screen (bayar di sana)
+      Navigator.of(context).pop(); // profil ustadz
+      Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => VisitStatusScreen(visitId: visitId, initialInvoiceUrl: invoiceUrl)));
     } catch (e) {
       if (!mounted) return;
-      setState(() => _booking = false);
+      setState(() => _loading = false);
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Gagal membuat pesanan — coba lagi')));
     }
@@ -207,7 +121,8 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
                       EmptyState(
                         icon: Icons.search_off,
                         title: 'Tidak ada ustadz di sekitar',
-                        subtitle: 'Ustadz aktif & lokasinya segar dalam radius\nlayanan belum tersedia. Coba lagi nanti.',
+                        subtitle:
+                            'Ustadz aktif & lokasinya segar dalam radius layanan belum tersedia — coba lagi nanti.',
                       ),
                     ])
                   : RefreshIndicator(
@@ -218,23 +133,44 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
                         separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (context, i) {
                           final u = _ustadz[i] as Map<String, dynamic>;
-                          final tarif = (u['services'] as List<dynamic>? ?? [])
-                              .cast<Map<String, dynamic>>()
-                              .where((s) => s['service_type_id'] == widget.serviceTypeId)
-                              .toList();
-                          final price = tarif.isEmpty ? 0 : (tarif.first['price_amount'] as num?)?.toInt() ?? 0;
+                          final price = _tarifOf(u);
+                          final count = (u['rating_count'] as num?)?.toInt() ?? 0;
+                          final avg = u['rating_avg'];
                           return Card(
                             margin: EdgeInsets.zero,
                             child: ListTile(
-                              onTap: () => _showDetail(u),
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => UstadzProfilePage(
+                                      u: u,
+                                      serviceTypeId: widget.serviceTypeId,
+                                      onBook: () => _book(u),
+                                    ),
+                                  ),
+                                );
+                                if (mounted) setState(() {}); // refresh list state
+                              },
                               leading: CircleAvatar(
-                                child: Text((u['full_name'] as String? ?? 'U')[0].toUpperCase()),
+                                child: Text(
+                                    (u['full_name'] as String? ?? 'U')[0].toUpperCase()),
                               ),
                               title: Text(u['full_name'] as String? ?? 'Ustadz',
                                   style: const TextStyle(fontWeight: FontWeight.w600)),
                               subtitle: Text(
                                   '${(u['distance_km'] as num?)?.toStringAsFixed(1)} km • Rp ${_rp(price)}'),
-                              trailing: _ratingBadge(u),
+                              trailing: avg == null || count == 0
+                                  ? const Text('Baru',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey))
+                                  : Text('★${(avg as num).toStringAsFixed(1)}',
+                                      style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFF8a6d1a))),
                             ),
                           );
                         },
@@ -243,18 +179,182 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
     );
   }
 
-  Widget _row(IconData i, String label, String value) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(i, size: 18, color: Colors.grey),
-            const SizedBox(width: 10),
-            SizedBox(width: 70, child: Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey))),
-            Expanded(child: Text(value, style: const TextStyle(fontSize: 13))),
-          ],
+  String _rp(int n) => n.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => '.');
+}
+
+/// Halaman profil ustadz — pengganti bottom-sheet (konten padat butuh ruang penuh).
+class UstadzProfilePage extends StatefulWidget {
+  final Map<String, dynamic> u;
+  final int serviceTypeId;
+  final VoidCallback onBook;
+
+  const UstadzProfilePage({
+    super.key,
+    required this.u,
+    required this.serviceTypeId,
+    required this.onBook,
+  });
+
+  @override
+  State<UstadzProfilePage> createState() => _UstadzProfilePageState();
+}
+
+class _UstadzProfilePageState extends State<UstadzProfilePage> {
+  List<dynamic> _reviews = [];
+  bool _loadingReviews = true;
+  bool _booking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReviews();
+  }
+
+  Future<void> _loadReviews() async {
+    try {
+      final r = await api.visitUstadzReviews(widget.u['ustadz_id'] as int);
+      if (!mounted) return;
+      setState(() {
+        _reviews = r;
+        _loadingReviews = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingReviews = false);
+    }
+  }
+
+  int get _price {
+    final tarif = (widget.u['services'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>()
+        .where((s) => s['service_type_id'] == widget.serviceTypeId)
+        .toList();
+    return tarif.isEmpty ? 0 : (tarif.first['price_amount'] as num?)?.toInt() ?? 0;
+  }
+
+  int get _dur {
+    final tarif = (widget.u['services'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>()
+        .where((s) => s['service_type_id'] == widget.serviceTypeId)
+        .toList();
+    return tarif.isEmpty ? 60 : (tarif.first['duration_minutes'] as num?)?.toInt() ?? 60;
+  }
+
+  Future<void> _book() async {
+    setState(() => _booking = true);
+    widget.onBook();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final u = widget.u;
+    final count = (u['rating_count'] as num?)?.toInt() ?? 0;
+    final avg = u['rating_avg'];
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profil Ustadz')),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: FilledButton.icon(
+            onPressed: _booking ? null : _book,
+            icon: _booking
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Icon(Icons.request_quote_outlined),
+            label: Text(_booking ? 'Memproses…' : 'Pesan & Bayar Rp ${_rp(_price)}'),
+          ),
         ),
-      );
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 28,
+                child: Text((u['full_name'] as String? ?? 'U')[0].toUpperCase(),
+                    style: const TextStyle(fontSize: 22)),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(u['full_name'] as String? ?? 'Ustadz',
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
+                    const SizedBox(height: 4),
+                    Text('${(u['distance_km'] as num?)?.toStringAsFixed(1)} km dari lokasi Anda',
+                        style: const TextStyle(fontSize: 13)),
+                  ],
+                ),
+              ),
+              Column(
+                children: [
+                  Text(avg == null ? '—' : '★${(avg as num).toStringAsFixed(1)}',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF8a6d1a))),
+                  Text('$count ulasan', style: const TextStyle(fontSize: 11)),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Card(
+            margin: EdgeInsets.zero,
+            child: ListTile(
+              leading: const Icon(Icons.sell_outlined),
+              title: const Text('Tarif layanan yang dipilih',
+                  style: TextStyle(fontSize: 13, color: Colors.grey)),
+              subtitle: Text('Rp ${_rp(_price)} • $_dur menit',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text('Penilaian santri lain',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+          const SizedBox(height: 8),
+          if (_loadingReviews)
+            const Center(child: Padding(
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(),
+            ))
+          else if (_reviews.isEmpty)
+            const Text('Belum ada penilaian.', style: TextStyle(fontSize: 13))
+          else
+            ..._reviews.map<Widget>((r) {
+              final m = r as Map<String, dynamic>;
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text('★${m['rating']}',
+                              style: const TextStyle(
+                                  color: Color(0xFFC9A227),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 13)),
+                          const SizedBox(width: 8),
+                          Text('oleh ${m['reviewer_first_name']}',
+                              style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(m['comment'] ?? '(tanpa catatan)', style: const TextStyle(fontSize: 13)),
+                    ],
+                  ),
+                ),
+              );
+            }),
+        ],
+      ),
+    );
+  }
 
   String _rp(int n) => n.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => '.');
 }

@@ -22,6 +22,12 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
   bool _loading = true;
   bool _busy = false;
   Timer? _poll;
+  // form inline (bukan popup)
+  bool _showDeclineForm = false;
+  final _declineCtrl = TextEditingController();
+  int _rating = 5;
+  final _reviewCtrl = TextEditingController();
+  bool _showReviewForm = false;
 
   @override
   void initState() {
@@ -75,26 +81,14 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
   }
 
   Future<void> _decline() async {
-    final ctrl = TextEditingController();
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Tolak permintaan?'),
-        content: TextField(
-          controller: ctrl,
-          decoration: const InputDecoration(hintText: 'Alasan (opsional, utk santri)'),
-          maxLines: 2,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Tolak')),
-        ],
-      ),
-    );
-    if (ok != true) return;
+    if (_declineCtrl.text.trim().isEmpty) return;
     setState(() => _busy = true);
     try {
-      await api.ustadzVisitDecline(widget.visitId, ctrl.text.trim());
+      await api.ustadzVisitDecline(widget.visitId, _declineCtrl.text.trim());
+      setState(() {
+        _showDeclineForm = false;
+        _declineCtrl.clear();
+      });
       _load();
     } catch (e) {
       _showErr(e, 'Gagal menolak');
@@ -127,52 +121,20 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
     }
   }
 
-  Future<void> _review() async {
-    int rating = 5;
-    final ctrl = TextEditingController();
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          title: const Text('Nilai santri'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Privat — hanya ustadz lain yang melihat saat santri ini memesan lagi.',
-                  style: TextStyle(fontSize: 11)),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (i) => IconButton(
-                      onPressed: () => setS(() => rating = i + 1),
-                      icon: Icon(i < rating ? Icons.star : Icons.star_border,
-                          color: const Color(0xFFC9A227), size: 32),
-                    )),
-              ),
-              TextField(
-                controller: ctrl,
-                decoration: const InputDecoration(hintText: 'Catatan (wajib santun)', isDense: true),
-                maxLines: 2,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Nanti')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Kirim')),
-          ],
-        ),
-      ),
-    );
-    if (ok != true) return;
+  Future<void> _submitReview() async {
+    setState(() => _busy = true);
     try {
-      await api.ustadzVisitReview(widget.visitId, rating: rating, comment: ctrl.text);
+      await api.ustadzVisitReview(widget.visitId, rating: _rating, comment: _reviewCtrl.text);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Terima kasih — penilaian tampil setelah santri juga menilai.')));
+            const SnackBar(content: Text('Terima kasih - penilaian tampil setelah santri juga menilai.')));
       }
+      setState(() => _showReviewForm = false);
       _load();
     } catch (e) {
       _showErr(e, 'Gagal mengirim penilaian');
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -209,6 +171,90 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
                       ],
                       const SizedBox(height: 20),
                       ..._actions(v),
+                      if (_showDeclineForm && v['status'] == 'WAITING_CONFIRM') ...[
+                        const SizedBox(height: 12),
+                        Card(
+                          margin: EdgeInsets.zero,
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.06),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Alasan penolakan (utk santri)',
+                                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                                const SizedBox(height: 8),
+                                TextField(
+                                  controller: _declineCtrl,
+                                  decoration: const InputDecoration(
+                                      hintText: 'cth: jadwal bentrok, maaf', isDense: true),
+                                  maxLines: 2,
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: FilledButton.icon(
+                                    style: FilledButton.styleFrom(
+                                        backgroundColor: const Color(0xFFEF4444)),
+                                    onPressed: _busy ? null : _decline,
+                                    icon: const Icon(Icons.close),
+                                    label: const Text('Tolak & Kembalikan Dana'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (_showReviewForm && v['status'] == 'COMPLETED') ...[
+                        const SizedBox(height: 12),
+                        Card(
+                          margin: EdgeInsets.zero,
+                          color: const Color(0xFFC9A227).withValues(alpha: 0.08),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Penilaian Anda utk santri',
+                                    style: TextStyle(fontWeight: FontWeight.w700)),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Privat - hanya ustadz lain yang melihat saat santri ini memesan lagi.',
+                                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(5, (i) {
+                                    return IconButton(
+                                      onPressed: () => setState(() => _rating = i + 1),
+                                      icon: Icon(
+                                          i < _rating ? Icons.star : Icons.star_border,
+                                          color: const Color(0xFFC9A227),
+                                          size: 34),
+                                    );
+                                  }),
+                                ),
+                                TextField(
+                                  controller: _reviewCtrl,
+                                  decoration: const InputDecoration(
+                                      hintText: 'Catatan (wajib santun)', isDense: true),
+                                  maxLines: 2,
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: FilledButton(
+                                    onPressed: _busy ? null : _submitReview,
+                                    child: Text(_busy ? 'Mengirim...' : 'Kirim Penilaian'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -326,7 +372,7 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
-            onPressed: _busy ? null : _decline,
+            onPressed: _busy ? null : () => setState(() => _showDeclineForm = !_showDeclineForm),
             icon: const Icon(Icons.close),
             style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
             label: const Text('Tolak — dana santri kembali penuh'),
@@ -350,7 +396,7 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
       case 'COMPLETED':
         return [
           FilledButton.icon(
-            onPressed: _review,
+            onPressed: () => setState(() => _showReviewForm = !_showReviewForm),
             icon: const Icon(Icons.star),
             label: const Text('Nilai Santri'),
           ),

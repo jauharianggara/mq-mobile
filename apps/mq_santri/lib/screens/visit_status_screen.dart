@@ -22,6 +22,11 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
   bool _loading = true;
   String? _error;
   Timer? _poll;
+  // form review inline (bukan popup)
+  int _rating = 5;
+  final _reviewCtrl = TextEditingController();
+  bool _showReviewForm = false;
+  bool _sendingReview = false;
 
   static const _flow = [
     'REQUESTED',
@@ -119,53 +124,22 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
     }
   }
 
-  Future<void> _review() async {
-    int rating = 5;
-    final ctrl = TextEditingController();
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          title: const Text('Nilai ustadz Anda'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (i) {
-                  return IconButton(
-                    onPressed: () => setS(() => rating = i + 1),
-                    icon: Icon(i < rating ? Icons.star : Icons.star_border,
-                        color: const Color(0xFFC9A227), size: 32),
-                  );
-                }),
-              ),
-              TextField(
-                controller: ctrl,
-                decoration: const InputDecoration(hintText: 'Catatan (opsional)', isDense: true),
-                maxLines: 2,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Nanti')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Kirim')),
-          ],
-        ),
-      ),
-    );
-    if (ok != true) return;
+  Future<void> _submitReview() async {
+    setState(() => _sendingReview = true);
     try {
-      await api.visitSubmitReview(widget.visitId, rating: rating, comment: ctrl.text);
+      await api.visitSubmitReview(widget.visitId, rating: _rating, comment: _reviewCtrl.text);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('Terima kasih! Penilaian tampil setelah ustadz juga menilai (adil dua arah).')));
       }
+      setState(() => _showReviewForm = false);
       _load();
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal mengirim penilaian')));
       }
+    } finally {
+      if (mounted) setState(() => _sendingReview = false);
     }
   }
 
@@ -213,6 +187,55 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
                       _infoCard(v),
                       const SizedBox(height: 16),
                       ..._actions(v),
+                      if (_showReviewForm && v?['status'] == 'COMPLETED') ...[
+                        const SizedBox(height: 12),
+                        Card(
+                          margin: EdgeInsets.zero,
+                          color: const Color(0xFFC9A227).withValues(alpha: 0.08),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Penilaian Anda',
+                                    style: TextStyle(fontWeight: FontWeight.w700)),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Privat hingga ustadz juga menilai (adil dua arah).',
+                                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(5, (i) {
+                                    return IconButton(
+                                      onPressed: () => setState(() => _rating = i + 1),
+                                      icon: Icon(
+                                          i < _rating ? Icons.star : Icons.star_border,
+                                          color: const Color(0xFFC9A227),
+                                          size: 34),
+                                    );
+                                  }),
+                                ),
+                                TextField(
+                                  controller: _reviewCtrl,
+                                  decoration: const InputDecoration(
+                                      hintText: 'Catatan (opsional)', isDense: true),
+                                  maxLines: 2,
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: FilledButton(
+                                    onPressed: _sendingReview ? null : _submitReview,
+                                    child: Text(_sendingReview ? 'Mengirim…' : 'Kirim Penilaian'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -332,7 +355,7 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
       case 'COMPLETED':
         return [
           FilledButton.icon(
-            onPressed: _review,
+            onPressed: () => setState(() => _showReviewForm = !_showReviewForm),
             icon: const Icon(Icons.star),
             label: const Text('Beri Penilaian untuk Ustadz'),
           ),
