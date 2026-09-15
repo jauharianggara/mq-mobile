@@ -30,18 +30,18 @@ environment:
 dependencies:
   mq_shared:
     path: ../../packages/mq_shared
-  shared_preferences: ^2.2.0
+  shared_preferences: ^2.5.5
   flutter:
     sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  just_audio: ^0.10.6
 
 dev_dependencies:
   mq_shared:
     path: ../../packages/mq_shared
-  shared_preferences: ^2.2.0
   flutter_test:
     sdk: flutter
 
