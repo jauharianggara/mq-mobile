@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
 
 import '../main.dart';
-import '../widgets/khatmil_progress_dialog.dart';
+import 'khatmil_manual_progress_screen.dart';
 import 'khatmil_reader_screen.dart';
 
 class KhatmilDetailScreen extends StatefulWidget {
@@ -71,7 +71,8 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
   }
 
   void _openManual(Map<dynamic, dynamic> a) {
-    showKhatmilManualProgress(context, assignment: a, onSaved: _load);
+    Navigator.push(context, MaterialPageRoute(builder: (_) => KhatmilManualProgressScreen(assignment: a)))
+        .then((_) => _load());
   }
 
   /// Bottom sheet info juz — nama PEMILIK + posisi + aksi (plan F3).
