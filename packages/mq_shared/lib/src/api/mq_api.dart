@@ -229,4 +229,44 @@ class MqApi {
         'lng': lng,
         if (accuracyM != null) 'accuracy_m': accuracyM,
       });
+
+  // ---- ustadz side ----
+  Future<Map<String, dynamic>?> ustadzVisitSettings() => get('/ustadz/visits/settings');
+  Future<Map<String, dynamic>?> ustadzPutVisitSettings({required bool isAccepting, required int maxActiveVisits}) =>
+      put('/ustadz/visits/settings', data: {
+        'is_accepting': isAccepting,
+        'max_active_visits': maxActiveVisits,
+      });
+
+  Future<List<dynamic>> ustadzVisitServices() async =>
+      (await getPage('/ustadz/visit/services', query: {'limit': 50})).items;
+
+  Future<Map<String, dynamic>?> ustadzUpsertVisitService({
+    required int serviceTypeId,
+    required int priceAmount,
+    required int durationMinutes,
+    String? note,
+  }) =>
+      post('/ustadz/visit/services', data: {
+        'service_type_id': serviceTypeId,
+        'price_amount': priceAmount,
+        'duration_minutes': durationMinutes,
+        if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+      });
+
+  Future<void> ustadzDeleteVisitService(int serviceTypeId) async =>
+      dio.delete('/ustadz/visit/services/$serviceTypeId');
+
+  Future<Map<String, dynamic>?> ustadzMyVisits() => get('/ustadz/visits');
+  Future<List<dynamic>> ustadzRequesterReviews(int visitId) async =>
+      (await getPage('/ustadz/visits/$visitId/requester-reviews', query: {'limit': 20})).items;
+  Future<Map<String, dynamic>?> ustadzVisitConfirm(int id) => post('/ustadz/visits/$id/confirm');
+  Future<Map<String, dynamic>?> ustadzVisitDecline(int id, String reason) =>
+      post('/ustadz/visits/$id/decline', data: {'reason': reason});
+  Future<Map<String, dynamic>?> ustadzVisitComplete(int id) => post('/ustadz/visits/$id/complete');
+  Future<Map<String, dynamic>?> ustadzVisitReview(int id, {required int rating, String? comment}) =>
+      post('/ustadz/visits/$id/review', data: {
+        'rating': rating,
+        if (comment != null && comment.trim().isNotEmpty) 'comment': comment.trim(),
+      });
 }
