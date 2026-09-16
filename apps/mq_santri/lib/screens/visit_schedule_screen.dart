@@ -64,6 +64,28 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
 
   /// Probe slot 14 hari ke depan (paralel, hours = durasi terpilih) untuk menandai
   /// tanggal yang bisa dibooking — tanggal libur/tanpa jam terbuka tidak bisa dipilih.
+  /// Kalender: hanya tanggal yang terbuka yang bisa dipilih.
+  Future<void> _pickDate() async {
+    final today = DateTime.now();
+    final first = DateTime(today.year, today.month, today.day);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _dates[_selectedDay.clamp(0, _dates.length - 1)],
+      firstDate: first,
+      lastDate: first.add(const Duration(days: 13)),
+      selectableDayPredicate: (d) {
+        final idx = d.difference(first).inDays;
+        return idx >= 0 && idx < _dates.length && _openDays.contains(idx);
+      },
+      helpText: 'Tanggal terbuka ustadz',
+    );
+    if (picked == null || !mounted) return;
+    final idx = DateTime(picked.year, picked.month, picked.day).difference(first).inDays;
+    if (idx < 0 || idx >= _dates.length || !_openDays.contains(idx)) return;
+    setState(() => _selectedDay = idx);
+    _loadSlots();
+  }
+
   Future<void> _probeOpenDays() async {
     setState(() => _probing = true);
     final dates = _dates;
@@ -188,6 +210,11 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
               if (_probing)
                 const SizedBox(
                     width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+              IconButton(
+                tooltip: 'Buka kalender',
+                icon: const Icon(Icons.calendar_month_outlined),
+                onPressed: _probing || _openIdx.isEmpty ? null : _pickDate,
+              ),
             ],
           ),
           const SizedBox(height: 4),
