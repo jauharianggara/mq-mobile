@@ -106,12 +106,6 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
               if (status == null) ...[
                 Text('Juz ini masih kosong. Juz ditentukan otomatis (kosong terkecil) saat Anda mengambil juz — tidak bisa dipilih manual.',
                     style: TextStyle(fontSize: 13, color: Colors.grey[700])),
-                if (_joined)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: ElevatedButton.icon(
-
-                  ),
               ] else ...[
                 Text(
                   isMine ? 'Dipegang: Anda' : 'Dipegang: ${j['owner_name'] ?? '—'}',
