@@ -54,15 +54,15 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
     }
   }
 
-  Future<void> _claimJuz([int? juz]) async {
+  Future<void> _claimJuz() async {
     try {
       final d = await api.post('/khatmil/campaigns/${widget.campaignId}/juz/claim',
-        data: juz != null ? {'juz': juz} : {});
+        data: {});
       final j = d?['juz'];
-      _showSnack('Juz $j berhasil diklaim!', success: true);
+      _showSnack('Anda mendapat Juz $j — satu santri satu juz', success: true);
       _load();
     } catch (e) {
-      _showSnack(_errMsg(e));
+      _showSnack(apiErrorMessage(e, 'Gagal mengambil juz'));
     }
   }
 
@@ -104,15 +104,13 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
               ),
               const SizedBox(height: 8),
               if (status == null) ...[
-                Text('Belum diklaim siapa pun.', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+                Text('Juz ini masih kosong. Juz ditentukan otomatis (kosong terkecil) saat Anda mengambil juz — tidak bisa dipilih manual.',
+                    style: TextStyle(fontSize: 13, color: Colors.grey[700])),
                 if (_joined)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: ElevatedButton.icon(
-                      onPressed: () { Navigator.pop(ctx); _claimJuz(j['juz'] as int); },
-                      icon: const Icon(Icons.add_circle_outline, size: 18),
-                      label: const Text('Klaim Juz Ini'),
-                    ),
+
                   ),
               ] else ...[
                 Text(
@@ -222,13 +220,15 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
                         ...(_myAssignments ?? []).cast<Map<dynamic, dynamic>>().map<Widget>(_myJuzCard),
                         const SizedBox(height: 8),
                         ElevatedButton.icon(
-                          onPressed: () => _claimJuz(),
+                          onPressed: _myAssignments != null && _myAssignments!.isNotEmpty
+                              ? null
+                              : _claimJuz,
                           icon: const Icon(Icons.add_circle_outline),
-                          label: const Text('Klaim Juz Kosong'),
+                          label: const Text('Ambil Juz (otomatis)'),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Atau tap juz di peta untuk info & klaim',
+                          'Satu santri satu juz — tap juz di peta untuk info',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                         ),
