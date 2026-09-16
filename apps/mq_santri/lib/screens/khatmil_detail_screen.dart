@@ -54,12 +54,12 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
     }
   }
 
-  Future<void> _claimJuz() async {
+  /// ATURAN: santri pilih juz sendiri (tap peta); satu santri satu juz.
+  Future<void> _claimJuz(int juz) async {
     try {
-      final d = await api.post('/khatmil/campaigns/${widget.campaignId}/juz/claim',
-        data: {});
-      final j = d?['juz'];
-      _showSnack('Anda mendapat Juz $j — satu santri satu juz', success: true);
+      await api.post('/khatmil/campaigns/${widget.campaignId}/juz/claim',
+        data: {'juz': juz});
+      _showSnack('Juz $juz sekarang milik Anda — satu santri satu juz', success: true);
       _load();
     } catch (e) {
       _showSnack(apiErrorMessage(e, 'Gagal mengambil juz'));
@@ -104,8 +104,25 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
               ),
               const SizedBox(height: 8),
               if (status == null) ...[
-                Text('Juz ini masih kosong. Juz ditentukan otomatis (kosong terkecil) saat Anda mengambil juz — tidak bisa dipilih manual.',
-                    style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+                Text('Juz ini masih kosong — Anda boleh mengambilnya.', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: ElevatedButton.icon(
+                    onPressed: (_myAssignments == null || _myAssignments!.isEmpty)
+                        ? () { Navigator.pop(ctx); _claimJuz(j['juz'] as int); }
+                        : null,
+                    icon: const Icon(Icons.add_circle_outline, size: 18),
+                    label: const Text('Ambil Juz Ini'),
+                  ),
+                ),
+                if (_myAssignments != null && _myAssignments!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      'Satu santri satu juz — Anda sedang memegang Juz ${(_myAssignments!.first)['juz']}.',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ),
               ] else ...[
                 Text(
                   isMine ? 'Anda' : '${j['owner_name'] ?? '—'}',
@@ -213,16 +230,8 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
                       else ...[
                         ...(_myAssignments ?? []).cast<Map<dynamic, dynamic>>().map<Widget>(_myJuzCard),
                         const SizedBox(height: 8),
-                        ElevatedButton.icon(
-                          onPressed: _myAssignments != null && _myAssignments!.isNotEmpty
-                              ? null
-                              : _claimJuz,
-                          icon: const Icon(Icons.add_circle_outline),
-                          label: const Text('Ambil Juz (otomatis)'),
-                        ),
-                        const SizedBox(height: 4),
                         Text(
-                          'Satu santri satu juz — tap juz di peta untuk info',
+                          'Tap juz kosong di peta untuk mengambilnya — satu santri satu juz',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                         ),

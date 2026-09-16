@@ -87,16 +87,14 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
       final d = await api.visitPay(widget.visitId);
       final url = d?['invoice_url'] as String?;
       if (!mounted) return;
-      if (url == null || url.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Invoice belum tersedia — coba beberapa saat lagi')));
+      // DEMO/MOCK: server menandai lunas seketika — tak ada halaman bayar Xendit.
+      if (url == null || url.isEmpty || url.startsWith('mock://')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Pembayaran berhasil ✓')));
+        _load();
         return;
       }
-      if (url.startsWith('mock://')) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('MODE DEV: invoice mock — pembayaran disimulasikan dari server dev')));
-        return;
-      }
+      // Mode real: buka halaman invoice Xendit.
       final ok = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
       if (!ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tidak bisa membuka halaman bayar')));
