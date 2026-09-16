@@ -371,4 +371,21 @@ class MqApi {
         'rating': rating,
         if (comment != null && comment.trim().isNotEmpty) 'comment': comment.trim(),
       });
+
+  // Penarikan dana (payout) — self-service ustadz (W3b)
+  /// Riwayat penarikan + info fee & minimum: {items, fee, min}.
+  Future<dynamic> ustadzPayouts() => get('/ustadz/payouts');
+
+  Future<Map<String, dynamic>?> ustadzCreatePayout({
+    required String bankName,
+    required String accountNo,
+    required String accountName,
+    required int amount,
+  }) =>
+      post('/ustadz/payouts', data: {
+        'bank_name': bankName.trim(),
+        'account_no': accountNo.trim(),
+        'account_name': accountName.trim(),
+        'amount': amount,
+      });
 }

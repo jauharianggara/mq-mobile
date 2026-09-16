@@ -1,24 +1,24 @@
 # Graph Report - .  (2026-09-16)
 
 ## Corpus Check
-- Corpus is ~36,079 words - fits in a single context window. You may not need a graph.
+- Corpus is ~36,188 words - fits in a single context window. You may not need a graph.
 
 ## Summary
-- 346 nodes · 305 edges · 38 communities detected
+- 347 nodes · 306 edges · 38 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
-- Edge kinds: contains: 305
+- Edge kinds: contains: 306
 
 
 ## Input Scope
 - Requested: auto
 - Resolved: committed (source: default-auto)
-- Included files: 76 · Candidates: 169
-- Excluded: 0 untracked · 16761 ignored · 0 sensitive · 0 missing committed
+- Included files: 76 · Candidates: 171
+- Excluded: 5 untracked · 16782 ignored · 0 sensitive · 0 missing committed
 - Recommendation: Use --scope all or graphify.yaml inputs.corpus for a knowledge-base folder.
 
 ## Graph Freshness
-- Built from Git commit: `30310d8`
+- Built from Git commit: `e91e317`
 - Compare this hash to `git rev-parse HEAD` before trusting freshness-sensitive graph output.
 ## God Nodes (most connected - your core abstractions)
 1. `MqSantriApp` - 1 edges
@@ -166,7 +166,7 @@ Cohesion: 0.14
 Nodes (2): VisitSettingsScreen, _VisitSettingsScreenState
 
 ### Community 0 - "Community 0"
-Cohesion: 0.09
+Cohesion: 0.08
 Nodes (1): MqApi
 
 ### Community 31 - "Community 31"
@@ -275,4 +275,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 3` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.08695652173913043 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08333333333333333 - nodes in this community are weakly interconnected._

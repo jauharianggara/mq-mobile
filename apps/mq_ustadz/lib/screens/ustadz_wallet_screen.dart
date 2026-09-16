@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
 
 import '../main.dart';
+import 'payout_screen.dart';
 
 /// Saldo Penghasilan ustadz (W3): hasil kunjungan selesai masuk otomatis (EARNING).
 /// Read-only — penarikan via pengajuan (menyusul); penyesuaian admin butuh ACC di sini.
@@ -164,6 +165,19 @@ class _UstadzWalletScreenState extends State<UstadzWalletScreen> {
                     );
                   }),
 
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () async {
+                        await Navigator.push(
+                            context, MaterialPageRoute(builder: (_) => const PayoutScreen()));
+                        _load();
+                      },
+                      icon: const Icon(Icons.outbox_outlined),
+                      label: const Text('Tarik Dana ke Rekening Bank'),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   const Text('Riwayat', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                   const SizedBox(height: 8),
