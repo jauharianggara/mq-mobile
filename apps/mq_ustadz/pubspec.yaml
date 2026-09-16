@@ -41,6 +41,7 @@ dependencies:
   just_audio: ^0.10.6
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
   mq_shared:
     path: ../../packages/mq_shared
   flutter_test:
@@ -94,3 +95,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+  android: "launcher_icon"
+  adaptive_icon_background: "#14532D"
+  adaptive_icon_foreground: "assets/icon/icon.png"
+  remove_alpha_ios: true

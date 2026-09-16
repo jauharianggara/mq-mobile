@@ -1,24 +1,24 @@
 # Graph Report - .  (2026-09-16)
 
 ## Corpus Check
-- Corpus is ~37,437 words - fits in a single context window. You may not need a graph.
+- Corpus is ~37,600 words - fits in a single context window. You may not need a graph.
 
 ## Summary
-- 357 nodes · 315 edges · 39 communities detected
+- 358 nodes · 316 edges · 39 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
-- Edge kinds: contains: 315
+- Edge kinds: contains: 316
 
 
 ## Input Scope
 - Requested: auto
 - Resolved: committed (source: default-auto)
-- Included files: 77 · Candidates: 176
-- Excluded: 3 untracked · 16788 ignored · 0 sensitive · 0 missing committed
+- Included files: 77 · Candidates: 180
+- Excluded: 35 untracked · 16811 ignored · 0 sensitive · 0 missing committed
 - Recommendation: Use --scope all or graphify.yaml inputs.corpus for a knowledge-base folder.
 
 ## Graph Freshness
-- Built from Git commit: `48447cb`
+- Built from Git commit: `7ed9140`
 - Compare this hash to `git rev-parse HEAD` before trusting freshness-sensitive graph output.
 ## God Nodes (most connected - your core abstractions)
 1. `MqSantriApp` - 1 edges
@@ -57,7 +57,7 @@ Nodes (2): HafalanSubmitScreen, _HafalanSubmitScreenState
 Cohesion: 0.40
 Nodes (2): HomeScreen, _HomeScreenState
 
-### Community 7 - "Community 7"
+### Community 8 - "Community 8"
 Cohesion: 0.17
 Nodes (2): KhatmilDetailScreen, _KhatmilDetailScreenState
 
@@ -121,8 +121,8 @@ Nodes (2): VisitChatScreen, _VisitChatScreenState
 Cohesion: 0.22
 Nodes (4): VisitPickUstadzScreen, _VisitPickUstadzScreenState, UstadzProfilePage, _UstadzProfilePageState
 
-### Community 8 - "Community 8"
-Cohesion: 0.17
+### Community 7 - "Community 7"
+Cohesion: 0.15
 Nodes (2): VisitScheduleScreen, _VisitScheduleScreenState
 
 ### Community 22 - "Community 22"
@@ -204,7 +204,7 @@ Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 30`** (2 nodes): `HomeScreen`, `_HomeScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 7`** (2 nodes): `KhatmilDetailScreen`, `_KhatmilDetailScreenState`
+- **Thin community `Community 8`** (2 nodes): `KhatmilDetailScreen`, `_KhatmilDetailScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 24`** (2 nodes): `KhatmilLeaderboardScreen`, `_KhatmilLeaderboardScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -234,7 +234,7 @@ Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 12`** (2 nodes): `VisitChatScreen`, `_VisitChatScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 8`** (2 nodes): `VisitScheduleScreen`, `_VisitScheduleScreenState`
+- **Thin community `Community 7`** (2 nodes): `VisitScheduleScreen`, `_VisitScheduleScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 22`** (2 nodes): `VisitScreen`, `_VisitScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.

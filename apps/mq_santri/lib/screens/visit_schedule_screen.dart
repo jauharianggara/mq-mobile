@@ -37,9 +37,11 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
   int _duration = 1;
   int _selectedDay = 0; // index ke daftar tanggal (0 = hari ini)
   String? _startTime;
+  int _maxDur = 8; // jam beruntun maks utk jam mulai terpilih
   List<String> _slots = [];
+  Map<String, int> _maxHours = {}; // "16:00" -> maks jam beruntun
   bool _loadingSlots = false;
-  final Set<int> _openDays = {}; // tanggal yang punya slot (probe durasi terpilih)
+  final Set<int> _openDays = {}; // tanggal yang punya slot (>= 1 jam)
   bool _probing = true;
   bool _creating = false;
 
@@ -85,14 +87,15 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
     _loadSlots();
   }
 
-  /// Probe slot 14 hari ke depan (paralel, hours = durasi terpilih) untuk menandai
-  /// tanggal yang bisa dibooking — tanggal libur/tanpa jam terbuka tidak bisa dipilih.
+  /// Probe slot 14 hari ke depan (paralel, durasi minimum 1 jam) untuk menandai
+  /// tanggal yang punya minimal satu jam terbuka.
   Future<void> _probeOpenDays() async {
     setState(() => _probing = true);
     final dates = _dates;
     final results = await Future.wait(
       dates.map((d) => api
-          .visitSlots(ustadzId: widget.u['ustadz_id'] as int, date: _ymd(d), hours: _duration)
+          .visitSlots(ustadzId: widget.u['ustadz_id'] as int, date: _ymd(d), hours: 1)
+          .then((r) => r.slots)
           .catchError((_) => const <String>[])),
     );
     if (!mounted) return;
@@ -105,15 +108,14 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
         ..clear()
         ..addAll(open);
       _probing = false;
-      // jika tanggal terpilih tak lagi tersedia setelah durasi berubah → geser
+      // jika tanggal terpilih tak lagi tersedia → geser ke yang pertama
       if (!_openDays.contains(_selectedDay) && _openDays.isNotEmpty) {
         _selectedDay = _openDays.first;
-        _startTime = null;
         _loadSlots();
       } else if (!_openDays.contains(_selectedDay)) {
         _selectedDay = 0;
-        _startTime = null;
         _slots = [];
+        _maxHours = {};
       }
     });
   }
@@ -122,25 +124,35 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
     setState(() {
       _loadingSlots = true;
       _startTime = null;
+      _maxDur = 8;
     });
     try {
-      final s = await api.visitSlots(
-          ustadzId: widget.u['ustadz_id'] as int, date: _ymd(_dates[_selectedDay]), hours: _duration);
+      // hours=1 → semua jam terbuka + jam beruntun maksimal per jam mulai
+      final r = await api.visitSlots(
+          ustadzId: widget.u['ustadz_id'] as int, date: _ymd(_dates[_selectedDay]), hours: 1);
       if (!mounted) return;
-      setState(() => _slots = s);
+      setState(() {
+        _slots = r.slots;
+        _maxHours = r.maxHours;
+      });
     } catch (_) {
       if (!mounted) return;
-      setState(() => _slots = []);
+      setState(() {
+        _slots = [];
+        _maxHours = {};
+      });
     } finally {
       if (mounted) setState(() => _loadingSlots = false);
     }
   }
 
-  void _setDuration(int h) {
-    if (h == _duration) return;
-    setState(() => _duration = h);
-    // ketersediaan bergantung durasi (harus muat dalam rentang) → probe ulang
-    _probeOpenDays();
+  void _pickStart(String t) {
+    setState(() {
+      _startTime = t;
+      _maxDur = _maxHours[t] ?? 1;
+      // durasi yang sudah dipilih melebihi sisa rentang → turunkan
+      if (_duration > _maxDur) _duration = _maxDur;
+    });
   }
 
   Future<void> _create() async {
@@ -329,10 +341,12 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
                 runSpacing: 8,
                 children: _slots.map<Widget>((t) {
                   final sel = _startTime == t;
+                  final maxT = _maxHours[t] ?? 0;
+                  final disabled = maxT < 1;
                   return ChoiceChip(
                     label: Text(t, style: const TextStyle(fontWeight: FontWeight.w700)),
                     selected: sel,
-                    onSelected: (_) => setState(() => _startTime = t),
+                    onSelected: disabled ? null : (_) => _pickStart(t),
                   );
                 }).toList(),
               ),
@@ -342,16 +356,22 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
           if (_startTime != null) ...[
             const SizedBox(height: 20),
             _stepHeader(context, 3, 'Pilih durasi kunjungan'),
+            const SizedBox(height: 4),
+            Text(
+                _maxDur > 1
+                    ? 'Maksimal $_maxDur jam untuk jam mulai ini.'
+                    : 'Hanya 1 jam tersedia untuk jam mulai ini.',
+                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: List.generate(8, (i) {
+              children: List.generate(_maxDur, (i) {
                 final h = i + 1;
                 return ChoiceChip(
                   label: Text('$h jam'),
                   selected: _duration == h,
-                  onSelected: (_) => _setDuration(h),
+                  onSelected: (_) => setState(() => _duration = h),
                 );
               }),
             ),

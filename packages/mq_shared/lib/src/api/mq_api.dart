@@ -222,11 +222,21 @@ class MqApi {
   Future<List<dynamic>> visitNearby(double lat, double lng) =>
       getList('/visits/ustadz/nearby', query: {'lat': lat, 'lng': lng});
 
-  /// Jam mulai tersedia ("HH:MM" WIB) utk tanggal + durasi tertentu — server-authoritative.
-  Future<List<String>> visitSlots({required int ustadzId, required String date, required int hours}) async {
+  /// Jam mulai tersedia ("HH:MM" WIB) + jam beruntun maksimal per jam mulai.
+  /// [hours] hanya untuk filter server; client biasanya memakai hours=1 agar
+  /// semua jam terbuka tampil, lalu membatasi durasi via [maxHours].
+  Future<({List<String> slots, Map<String, int> maxHours})> visitSlots(
+      {required int ustadzId, required String date, required int hours}) async {
     final d = await get('/visits/slots', query: {'ustadz_id': ustadzId, 'date': date, 'hours': hours});
-    if (d is Map) return ((d['slots'] as List?) ?? []).cast<String>();
-    return const [];
+    if (d is Map) {
+      final slots = ((d['slots'] as List?) ?? []).map((e) => e.toString()).toList();
+      final mh = <String, int>{};
+      for (final e in ((d['max_hours'] as List?) ?? const [])) {
+        if (e is Map) mh[e['start'].toString()] = (e['max_hours'] as num?)?.toInt() ?? 0;
+      }
+      return (slots: slots, maxHours: mh);
+    }
+    return (slots: const <String>[], maxHours: const <String, int>{});
   }
 
   Future<Map<String, dynamic>?> visitCreate({

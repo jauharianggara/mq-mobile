@@ -56,14 +56,9 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Logo
-              Container(
-                width: 64, height: 64,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Text('MQ', style: TextStyle(color: AppColors.onPrimary, fontSize: 24, fontWeight: FontWeight.w900)),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.asset('assets/icon/icon.png', width: 64, height: 64, fit: BoxFit.cover),
               ),
               const SizedBox(height: 12),
               Text(
