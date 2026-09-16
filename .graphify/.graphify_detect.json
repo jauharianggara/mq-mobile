@@ -86,9 +86,9 @@
     "video": []
   },
   "total_files": 76,
-  "total_words": 35976,
+  "total_words": 36079,
   "needs_graph": false,
-  "warning": "Corpus is ~35,976 words - fits in a single context window. You may not need a graph.",
+  "warning": "Corpus is ~36,079 words - fits in a single context window. You may not need a graph.",
   "skipped_sensitive": [],
   "graphifyignore_patterns": 9,
   "scope": {
@@ -97,8 +97,8 @@
     "source": "default-auto",
     "root": ".",
     "git_root": ".",
-    "head": "1c6bec15e045cb44fe3433d3784867647e6311db",
-    "candidate_count": 166,
+    "head": "30310d8f27eded5ddcb96fd6e324d1eb917a8d2b",
+    "candidate_count": 169,
     "included_count": 76,
     "excluded_untracked_count": 0,
     "excluded_ignored_count": 16761,

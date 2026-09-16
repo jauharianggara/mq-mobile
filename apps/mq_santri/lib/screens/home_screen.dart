@@ -91,30 +91,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Last Read
-                      if (_data?['last_read'] != null) ...[
-                        _sectionTitle('Terakhir Dibaca'),
-                        Card(
-                          child: ListTile(
-                            leading: Container(
-                              width: 40, height: 40,
-                              decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                              child: const Icon(Icons.bookmark, color: AppColors.primary),
-                            ),
-                            title: Text(
-                              '${_data!['last_read']!['surah_name']} : ${_data!['last_read']!['ayah_number']}',
-                              style: const TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                            subtitle: Text('Juz ${_data!['last_read']!['juz']} · Hal. ${_data!['last_read']!['page']}'),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () {
-                              // TODO: navigate ke Quran reader di ayat ini
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-
                       // Khatmil aktif
                       if ((_data?['khatmil'] as List?)?.isNotEmpty == true) ...[
                         _sectionTitle('Khatmil Aktif'),

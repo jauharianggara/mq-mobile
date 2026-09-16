@@ -59,6 +59,9 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
 
   String _tglLabel(DateTime d) => '${_hariPendek[d.weekday % 7]} ${d.day} ${_bulan[d.month - 1]}';
 
+  /// Index tanggal yang terbuka (urut) — hanya ini yang tampil sebagai chip.
+  List<int> get _openIdx => _openDays.toList()..sort();
+
   /// Probe slot 14 hari ke depan (paralel, hours = durasi terpilih) untuk menandai
   /// tanggal yang bisa dibooking — tanggal libur/tanpa jam terbuka tidak bisa dipilih.
   Future<void> _probeOpenDays() async {
@@ -85,6 +88,7 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
         _startTime = null;
         _loadSlots();
       } else if (!_openDays.contains(_selectedDay)) {
+        _selectedDay = 0;
         _startTime = null;
         _slots = [];
       }
@@ -204,20 +208,42 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
             ],
           ),
           const SizedBox(height: 4),
-          const Text('Hanya tanggal & jam yang dibuka ustadz (termasuk tanggal libur dikecualikan).',
+          const Text('Hanya tanggal yang dibuka ustadz yang tampil (tanggal libur dikecualikan).',
               style: TextStyle(fontSize: 12, color: Colors.grey)),
           const SizedBox(height: 8),
-          SizedBox(
-            height: 84,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _dates.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, i) {
-                final open = _openDays.contains(i);
-                final sel = _selectedDay == i && open;
-                final d = _dates[i];
-                return ChoiceChip(
+          if (_probing)
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_openIdx.isEmpty)
+            Card(
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: const [
+                    Icon(Icons.event_busy, color: Colors.grey),
+                    SizedBox(width: 10),
+                    Expanded(
+                        child: Text('Ustadz ini belum membuka jadwal dalam 14 hari ke depan.',
+                            style: TextStyle(fontSize: 13))),
+                  ],
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              height: 84,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: _openIdx.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, k) {
+                  final i = _openIdx[k];
+                  final sel = _selectedDay == i;
+                  final d = _dates[i];
+                  return ChoiceChip(
                   labelPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                   label: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -228,21 +254,17 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
                               fontWeight: FontWeight.w700,
                               color: sel
                                   ? Colors.white
-                                  : open
-                                      ? Theme.of(context).colorScheme.onSurface
-                                      : Colors.grey)),
+                                  : Theme.of(context).colorScheme.onSurface)),
                       const SizedBox(height: 2),
                       Text(i == 0 ? 'Hari ini' : (i == 1 ? 'Besok' : '${_hariPendek[d.weekday % 7]}'),
                           style: TextStyle(fontSize: 10, color: sel ? Colors.white70 : Colors.grey)),
                     ],
                   ),
                   selected: sel,
-                  onSelected: open
-                      ? (_) {
-                          setState(() => _selectedDay = i);
-                          _loadSlots();
-                        }
-                      : null,
+                  onSelected: (_) {
+                    setState(() => _selectedDay = i);
+                    _loadSlots();
+                  },
                   showCheckmark: false,
                 );
               },
