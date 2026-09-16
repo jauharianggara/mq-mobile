@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mq_shared/mq_shared.dart';
 import 'package:uuid/uuid.dart';
 
 import '../main.dart';
@@ -198,11 +199,11 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
         ),
       );
       if (done == true && mounted) Navigator.pop(context, true);
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() => _creating = false);
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal membuat pesanan. Coba lagi.')));
+          SnackBar(content: Text(apiErrorMessage(e, 'Gagal membuat pesanan. Coba lagi.'))));
     }
   }
 

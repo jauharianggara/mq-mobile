@@ -70,10 +70,10 @@ class _WalletScreenState extends State<WalletScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('MODE DEV: invoice mock — top-up disimulasikan dari server dev')));
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Gagal membuat invoice top-up')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(apiErrorMessage(e, 'Gagal membuat invoice top-up'))));
       }
     } finally {
       if (mounted) setState(() => _toppingUp = false);
@@ -91,10 +91,10 @@ class _WalletScreenState extends State<WalletScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(accept ? 'Penyesuaian disetujui — saldo diperbarui' : 'Penyesuaian ditolak')));
       _load();
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Gagal memproses penyesuaian')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(apiErrorMessage(e, 'Gagal memproses penyesuaian'))));
       }
     }
   }

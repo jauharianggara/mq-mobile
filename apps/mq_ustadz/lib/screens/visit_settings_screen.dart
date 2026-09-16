@@ -84,6 +84,26 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
     }
   }
 
+  /// Toggle langsung tersimpan (auto-save) — anti-pattern: toggle tanpa auto-save.
+  /// Nilai lain dikirim dari state ter-load, bukan field yang mungkin belum disimpan.
+  Future<void> _toggleAccepting(bool v) async {
+    setState(() => _accepting = v);
+    try {
+      await api.ustadzPutVisitSettings(
+          isAccepting: v, maxActiveVisits: _maxActive, pricePerHour: _pricePerHour);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(v
+              ? 'Tersimpan — Anda menerima pesanan baru'
+              : 'Tersimpan — santri tidak bisa memesan saat ini')));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _accepting = !v);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Gagal menyimpan')));
+    }
+  }
+
   // ---------- ketersediaan mingguan ----------
 
   List<Map<String, dynamic>> _slotsOf(int weekday) => _slots
@@ -185,27 +205,54 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Pengaturan Kunjungan')),
+      appBar: AppBar(title: const Text('Jadwal Ketersediaan')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
                 // ---------- umum ----------
-                Card(
-                  margin: EdgeInsets.zero,
+                if (!_accepting)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.info_outline, size: 18, color: AppColors.warning),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text('Santri tidak bisa memesan Anda saat ini',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.warning,
+                                    fontWeight: FontWeight.w600)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                AnimatedOpacity(
+                  opacity: _accepting ? 1.0 : 0.55,
+                  duration: const Duration(milliseconds: 200),
+                  child: Card(
+                    margin: EdgeInsets.zero,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text('Menerima pesanan kunjungan',
+                          title: const Text('Terima pesanan baru',
                               style: TextStyle(fontWeight: FontWeight.w700)),
                           subtitle: const Text('Santri terdekat bisa menemukan & memesan Anda',
                               style: TextStyle(fontSize: 12)),
                           value: _accepting,
-                          onChanged: (v) => setState(() => _accepting = v),
+                          onChanged: _toggleAccepting,
                         ),
                         const SizedBox(height: 8),
                         Row(
@@ -252,13 +299,14 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
                     ),
                   ),
                 ),
+              ),
                 const SizedBox(height: 20),
 
                 // ---------- ketersediaan mingguan ----------
                 Row(
                   children: const [
                     Expanded(
-                        child: Text('Ketersediaan Mingguan',
+                        child: Text('Jam Buka Mingguan',
                             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15))),
                   ],
                 ),
@@ -334,7 +382,7 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
                 TextButton.icon(
                   onPressed: () => _addSlot(weekday),
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Rentang'),
+                  label: const Text('Tambah'),
                 ),
               ],
             ),

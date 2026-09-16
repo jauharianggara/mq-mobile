@@ -102,9 +102,10 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
       if (!ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tidak bisa membuka halaman bayar')));
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal membuat invoice')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(apiErrorMessage(e, 'Gagal membuat invoice'))));
       }
     }
   }
@@ -122,8 +123,8 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
       _load();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Pembayaran deposit gagal / saldo tidak cukup')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(apiErrorMessage(e, 'Pembayaran deposit gagal — cek saldo atau coba lagi'))));
       }
     } finally {
       if (mounted) setState(() => _payingDeposit = false);
@@ -149,7 +150,8 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
       _load();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal membatalkan')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(apiErrorMessage(e, 'Gagal membatalkan'))));
       }
     }
   }

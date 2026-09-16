@@ -1,24 +1,25 @@
 # Graph Report - .  (2026-09-16)
 
 ## Corpus Check
-- Corpus is ~37,600 words - fits in a single context window. You may not need a graph.
+- 99 files · ~95,203 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 358 nodes · 316 edges · 39 communities detected
+- 361 nodes · 319 edges · 39 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
-- Edge kinds: contains: 316
+- Edge kinds: contains: 319
 
 
 ## Input Scope
 - Requested: auto
 - Resolved: committed (source: default-auto)
-- Included files: 77 · Candidates: 180
-- Excluded: 35 untracked · 16811 ignored · 0 sensitive · 0 missing committed
+- Included files: 99 · Candidates: 217
+- Excluded: 9 untracked · 16664 ignored · 0 sensitive · 0 missing committed
 - Recommendation: Use --scope all or graphify.yaml inputs.corpus for a knowledge-base folder.
 
 ## Graph Freshness
-- Built from Git commit: `7ed9140`
+- Built from Git commit: `05091a1`
 - Compare this hash to `git rev-parse HEAD` before trusting freshness-sensitive graph output.
 ## God Nodes (most connected - your core abstractions)
 1. `MqSantriApp` - 1 edges
@@ -41,7 +42,7 @@
 Cohesion: 0.18
 Nodes (5): MqSantriApp, SplashScreen, _SplashScreenState, ForceUpdateScreen, MqUstadzApp
 
-### Community 14 - "Community 14"
+### Community 15 - "Community 15"
 Cohesion: 0.22
 Nodes (2): HafalanDetailScreen, _HafalanDetailScreenState
 
@@ -85,8 +86,8 @@ Nodes (2): LoginScreen, _LoginScreenState
 Cohesion: 0.25
 Nodes (2): NotificationScreen, _NotificationScreenState
 
-### Community 16 - "Community 16"
-Cohesion: 0.22
+### Community 14 - "Community 14"
+Cohesion: 0.20
 Nodes (2): ProfileScreen, _ProfileScreenState
 
 ### Community 5 - "Community 5"
@@ -109,7 +110,7 @@ Nodes (2): ShellScreen, _ShellScreenState
 Cohesion: 0.29
 Nodes (2): TanyaScreen, _TanyaScreenState
 
-### Community 2 - "Community 2"
+### Community 3 - "Community 3"
 Cohesion: 0.14
 Nodes (2): TanyaThreadScreen, _TanyaThreadScreenState
 
@@ -141,7 +142,7 @@ Nodes (2): WalletScreen, _WalletScreenState
 Cohesion: 0.25
 Nodes (2): KhatmilUstadzScreen, _KhatmilUstadzScreenState
 
-### Community 15 - "Community 15"
+### Community 16 - "Community 16"
 Cohesion: 0.22
 Nodes (2): PayoutScreen, _PayoutScreenState
 
@@ -165,8 +166,8 @@ Nodes (2): VisitIncomingScreen, _VisitIncomingScreenState
 Cohesion: 0.15
 Nodes (2): VisitRequestScreen, _VisitRequestScreenState
 
-### Community 3 - "Community 3"
-Cohesion: 0.14
+### Community 2 - "Community 2"
+Cohesion: 0.13
 Nodes (2): VisitSettingsScreen, _VisitSettingsScreenState
 
 ### Community 0 - "Community 0"
@@ -196,7 +197,7 @@ Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
 ## Knowledge Gaps
 - **83 isolated node(s):** `MqSantriApp`, `SplashScreen`, `_SplashScreenState`, `ForceUpdateScreen`, `HafalanDetailScreen` (+78 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Community 14`** (2 nodes): `HafalanDetailScreen`, `_HafalanDetailScreenState`
+- **Thin community `Community 15`** (2 nodes): `HafalanDetailScreen`, `_HafalanDetailScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 23`** (2 nodes): `HafalanScreen`, `_HafalanScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -218,7 +219,7 @@ Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 20`** (2 nodes): `NotificationScreen`, `_NotificationScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 16`** (2 nodes): `ProfileScreen`, `_ProfileScreenState`
+- **Thin community `Community 14`** (2 nodes): `ProfileScreen`, `_ProfileScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 5`** (2 nodes): `QuranReaderScreen`, `_QuranReaderScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -230,7 +231,7 @@ Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 26`** (2 nodes): `TanyaScreen`, `_TanyaScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 2`** (2 nodes): `TanyaThreadScreen`, `_TanyaThreadScreenState`
+- **Thin community `Community 3`** (2 nodes): `TanyaThreadScreen`, `_TanyaThreadScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 12`** (2 nodes): `VisitChatScreen`, `_VisitChatScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -244,7 +245,7 @@ Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 19`** (2 nodes): `KhatmilUstadzScreen`, `_KhatmilUstadzScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 15`** (2 nodes): `PayoutScreen`, `_PayoutScreenState`
+- **Thin community `Community 16`** (2 nodes): `PayoutScreen`, `_PayoutScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 11`** (2 nodes): `SetoranReviewScreen`, `_SetoranReviewScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -256,7 +257,7 @@ Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 6`** (2 nodes): `VisitRequestScreen`, `_VisitRequestScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 3`** (2 nodes): `VisitSettingsScreen`, `_VisitSettingsScreenState`
+- **Thin community `Community 2`** (2 nodes): `VisitSettingsScreen`, `_VisitSettingsScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 0`** (1 nodes): `MqApi`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -274,11 +275,11 @@ _Questions this graph is uniquely positioned to answer:_
   _83 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.1 - nodes in this community are weakly interconnected._
-- **Should `Community 2` be split into smaller, more focused modules?**
+- **Should `Community 3` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
 - **Should `Community 4` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
-- **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
+- **Should `Community 2` be split into smaller, more focused modules?**
+  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.08333333333333333 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08 - nodes in this community are weakly interconnected._

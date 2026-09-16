@@ -3,6 +3,7 @@ import 'package:mq_shared/mq_shared.dart';
 import '../main.dart';
 import 'login_screen.dart';
 import 'ustadz_wallet_screen.dart';
+import 'visit_settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -16,6 +17,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _stats;
   bool _verified = false;
   int _walletBalance = -1; // -1 = belum termuat
+  List<dynamic> _availSlots = []; // jadwal ketersediaan (subtitle kartu)
   bool _loading = true;
 
   @override
@@ -29,12 +31,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // hanya untuk badge Terverifikasi (flag verified_at ustadz_profiles)
         api.get('/me/ustadz/availability').catchError((_) => null),
         api.walletBalance().catchError((_) => -1),
+        // jadwal ketersediaan kunjungan — subtitle kartu Profil
+        api.ustadzVisitAvailability().catchError((_) => null),
       ]);
       setState(() {
         _me = results[0];
         _stats = results[1];
         _verified = (results[2] as Map?)?['verified'] == true;
         _walletBalance = results[3] as int;
+        _availSlots = (results[4] as Map?)?['slots'] as List? ?? [];
         _loading = false;
       });
     } catch (_) { setState(() => _loading = false); }
@@ -96,6 +101,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 const SizedBox(height: 20),
 
+                // Jadwal ketersediaan — pintu utama (paling atas, mudah ditemukan)
+                Card(
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.gold.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.event_available, color: AppColors.goldDark),
+                    ),
+                    title: const Text('Jadwal Ketersediaan',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    subtitle: Text(
+                      _jadwalRingkas,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _availSlots.isEmpty ? AppColors.warning : AppColors.onSurfaceVariant,
+                        fontWeight: _availSlots.isEmpty ? FontWeight.w600 : FontWeight.w500,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    onTap: () async {
+                      await Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const VisitSettingsScreen()));
+                      _load();
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+
                 // Saldo penghasilan kunjungan
                 Card(
                   child: ListTile(
@@ -154,6 +190,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
     );
+  }
+
+  static const _hariPendek = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  static const _hariPanjang = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+  String _jm(int m) =>
+      '${(m ~/ 60).toString().padLeft(2, '0')}.${(m % 60).toString().padLeft(2, '0')}';
+
+  /// Ringkasan jadwal aktif untuk subtitle kartu Profil.
+  /// 0 slot = peringatan; 1 hari = nama panjang; 2–3 = singkatan;
+  /// ≥4 hari seragam & penuh 7 hari = "Setiap hari", selain itu "N hari terbuka".
+  String get _jadwalRingkas {
+    if (_availSlots.isEmpty) return 'Belum diatur — santri belum bisa memesan';
+    final byDay = <int, List<String>>{};
+    for (final s in _availSlots) {
+      final m = s as Map<String, dynamic>;
+      final d = (m['weekday'] as num?)?.toInt() ?? -1;
+      if (d < 0 || d > 6) continue;
+      final sm = (m['start_minute'] as num?)?.toInt() ?? 0;
+      final em = (m['end_minute'] as num?)?.toInt() ?? 0;
+      byDay.putIfAbsent(d, () => []).add('${_jm(sm)}–${_jm(em)}');
+    }
+    if (byDay.isEmpty) return 'Belum diatur — santri belum bisa memesan';
+    final days = byDay.keys.toList()..sort();
+    for (final r in byDay.values) {
+      r.sort();
+    }
+    final rentangSeragam = byDay.values.map((r) => r.join(' & ')).toSet().length == 1;
+    final rentang = byDay.values.first.join(' & ');
+    if (days.length == 7 && rentangSeragam) return 'Setiap hari $rentang';
+    if (days.length >= 4) return '${days.length} hari terbuka';
+    if (rentangSeragam) {
+      final label = days.length == 1
+          ? _hariPanjang[days.first]
+          : days.map((d) => _hariPendek[d]).join(' & ');
+      return '$label $rentang';
+    }
+    return days.map((d) => '${_hariPendek[d]} ${byDay[d]!.join(' & ')}').join(', ');
   }
 
   Widget _statItem(String label, String value) {

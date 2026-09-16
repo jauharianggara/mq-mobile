@@ -21,6 +21,20 @@ bool isUnreachableError(Object e) {
   return true; // non-dio -> konservatif: jangan paksa logout
 }
 
+/// Pesan error ramah dari exception API — ambil 'message' dari body server
+/// kalau ada (mis. "masih ada pesanan aktif — selesaikan/batalkan dulu",
+/// "saldo tidak cukup"); kalau bukan, kembalikan [fallback].
+String apiErrorMessage(Object e, String fallback) {
+  if (e is DioException) {
+    final d = e.response?.data;
+    if (d is Map && d['message'] is String) {
+      final m = (d['message'] as String).trim();
+      if (m.isNotEmpty) return m;
+    }
+  }
+  return fallback;
+}
+
 /// MQ API Client — dio-based dengan auth interceptor, refresh, force-update headers.
 /// Semua request relatif ke /api/v1 (proxy mq-admin atau langsung mq-api).
 class MqApi {
