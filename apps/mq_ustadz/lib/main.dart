@@ -13,16 +13,27 @@ Future<void> main() async {
   await MqSessionStore.init();
   MqSessionStore.attach(api);
   api.onSessionExpired = () {
+    // TIDAK auto-logout: tidak memaksa pindah layar. Sesi lokal dibersihkan,
+    // user diberi tahu via snackbar + tombol "Masuk" manual. Login hanya
+    // muncul natural saat app dibuka dari awal tanpa sesi valid.
     MqSessionStore.clear();
-    navKey.currentState?.pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (_) => false,
-    );
     final ctx = navKey.currentContext;
     if (ctx != null) {
-      ScaffoldMessenger.maybeOf(ctx)?.showSnackBar(
-        const SnackBar(content: Text('Sesi Anda berakhir. Silakan masuk kembali.')),
-      );
+      ScaffoldMessenger.maybeOf(ctx)
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: const Text('Sesi Anda berakhir. Silakan masuk kembali.'),
+          duration: const Duration(seconds: 8),
+          action: SnackBarAction(
+            label: 'Masuk',
+            onPressed: () {
+              navKey.currentState?.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (_) => false,
+              );
+            },
+          ),
+        ));
     }
   };
   runApp(const MqUstadzApp());
