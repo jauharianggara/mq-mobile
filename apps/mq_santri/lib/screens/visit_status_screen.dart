@@ -22,8 +22,7 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
   bool _loading = true;
   String? _error;
   Timer? _poll;
-  int _saldo = -1; // -1 = belum termuat
-  bool _payingDeposit = false;
+  int _saldo = -1; // -1 = belum termuat (dipakai loader awal)
   // form review inline (bukan popup)
   int _rating = 5;
   final _reviewCtrl = TextEditingController();
@@ -107,27 +106,6 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(apiErrorMessage(e, 'Gagal membuat invoice'))));
       }
-    }
-  }
-
-  /// Bayar langsung dari deposit (saldo) — uang tidak keluar aplikasi.
-  Future<void> _payDeposit() async {
-    setState(() => _payingDeposit = true);
-    try {
-      final d = await api.visitPayDeposit(widget.visitId);
-      if (!mounted) return;
-      final sisa = (d?['balance'] as num?)?.toInt();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Pembayaran berhasil${sisa != null ? ' — sisa deposit Rp ${_rp(sisa)}' : ''}')));
-      _saldo = -1;
-      _load();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(apiErrorMessage(e, 'Pembayaran deposit gagal — cek saldo atau coba lagi'))));
-      }
-    } finally {
-      if (mounted) setState(() => _payingDeposit = false);
     }
   }
 
@@ -361,41 +339,14 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
     switch (s) {
       case 'REQUESTED':
         final total = (v['price_total'] as num?)?.toInt() ?? 0;
-        final saldoCukup = _saldo >= total;
+        // DEMO 16Sep: sementara SATU tombol bayar (QRIS/VA/e-wallet) — tombol
+        // "Bayar pakai Deposit" disembunyikan (endpoint pay-deposit tetap ada, mudah dikembalikan).
         return [
-          if (saldoCukup) ...[
-            FilledButton.icon(
-              onPressed: _payingDeposit ? null : _payDeposit,
-              icon: _payingDeposit
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.account_balance_wallet),
-              label: Text('Bayar pakai Deposit — Rp ${_rp(total)}'),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: _pay,
-              icon: const Icon(Icons.qr_code),
-              label: const Text('Bayar QRIS / VA / e-wallet'),
-            ),
-          ] else ...[
-            FilledButton.icon(
-              onPressed: _pay,
-              icon: const Icon(Icons.request_quote),
-              label: Text('Bayar Rp ${_rp(total)} (QRIS/VA/e-wallet)'),
-            ),
-            if (_saldo >= 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  'Deposit Anda Rp ${_rp(_saldo)} — kurang dari tagihan. Top-up di halaman Deposit (Profil) agar bisa bayar langsung.',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ),
-          ],
+          FilledButton.icon(
+            onPressed: _pay,
+            icon: const Icon(Icons.qr_code),
+            label: Text('Bayar Rp ${_rp(total)} — QRIS / VA / e-wallet'),
+          ),
           const SizedBox(height: 8),
           OutlinedButton(onPressed: _cancel, child: const Text('Batalkan pesanan')),
         ];
