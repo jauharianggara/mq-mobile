@@ -33,7 +33,7 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
   static const _hariPendek = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
   static const _bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-  int _duration = 2;
+  int _duration = 1;
   int _selectedDay = 0; // index ke daftar tanggal (0 = hari ini)
   String? _startTime;
   List<String> _slots = [];
@@ -180,23 +180,6 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Durasi
-          const Text('Durasi kunjungan', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: List.generate(8, (i) {
-              final h = i + 1;
-              return ChoiceChip(
-                label: Text('$h jam'),
-                selected: _duration == h,
-                onSelected: (_) => _setDuration(h),
-              );
-            }),
-          ),
-          const SizedBox(height: 20),
-
           // Tanggal (hanya yang terbuka)
           Row(
             children: [
@@ -329,6 +312,26 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
                 );
               }).toList(),
             ),
+          const SizedBox(height: 20),
+
+          // Durasi (terakhir)
+          const Text('Pilih durasi kunjungan', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+          const SizedBox(height: 4),
+          const Text('Kalau durasi berubah, jam mulai yang tidak muat otomatis dikosongkan.',
+              style: TextStyle(fontSize: 12, color: Colors.grey)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: List.generate(8, (i) {
+              final h = i + 1;
+              return ChoiceChip(
+                label: Text('$h jam'),
+                selected: _duration == h,
+                onSelected: (_) => _setDuration(h),
+              );
+            }),
+          ),
           const SizedBox(height: 20),
 
           // Rincian tagihan
