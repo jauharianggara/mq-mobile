@@ -108,7 +108,7 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
                     style: TextStyle(fontSize: 13, color: Colors.grey[700])),
               ] else ...[
                 Text(
-                  isMine ? 'Dipegang: Anda' : 'Dipegang: ${j['owner_name'] ?? '—'}',
+                  isMine ? 'Anda' : '${j['owner_name'] ?? '—'}',
                   style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                 ),
                 if (status != 'COMPLETED') ...[
@@ -364,27 +364,38 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
             final isActive = status == 'ASSIGNED' || status == 'IN_PROGRESS';
             final isMine = (_myAssignments ?? []).any((a) => a['juz'] == j['juz'] && a['status'] != 'COMPLETED');
 
+            // Juz milik sendiri (sedang dibaca) = emas solid + border tebal —
+            // paling menonjol dibanding juz aktif orang lain (oranye muda).
             return GestureDetector(
               onTap: () => _showJuzSheet(j),
               child: Container(
                 decoration: BoxDecoration(
-                  color: isCompleted
-                      ? AppColors.success.withValues(alpha: 0.2)
-                      : isActive
-                          ? AppColors.warning.withValues(alpha: 0.2)
-                          : isMine
-                              ? AppColors.gold.withValues(alpha: 0.18)
+                  color: isMine
+                      ? AppColors.gold
+                      : isCompleted
+                          ? AppColors.success.withValues(alpha: 0.2)
+                          : isActive
+                              ? AppColors.warning.withValues(alpha: 0.2)
                               : Colors.grey[100],
                   borderRadius: BorderRadius.circular(6),
                   border: isMine ? Border.all(color: AppColors.gold, width: 2) : null,
+                  boxShadow: isMine
+                      ? [BoxShadow(color: AppColors.gold.withValues(alpha: 0.4), blurRadius: 4)]
+                      : null,
                 ),
                 child: Center(
                   child: Text(
                     '${j['juz']}',
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: isCompleted ? AppColors.success : isActive ? AppColors.warning : isMine ? AppColors.gold : Colors.grey,
+                      fontWeight: isMine ? FontWeight.w800 : FontWeight.w700,
+                      color: isMine
+                          ? Colors.white
+                          : isCompleted
+                              ? AppColors.success
+                              : isActive
+                                  ? AppColors.warning
+                                  : Colors.grey,
                     ),
                   ),
                 ),
