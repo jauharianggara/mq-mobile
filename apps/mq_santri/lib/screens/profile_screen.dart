@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../main.dart';
 import 'login_screen.dart';
 
@@ -26,9 +24,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _logout() async {
-    await api.logout();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await api.logout(); // server mencabut sesi + token lokal dibersihkan
+    await MqSessionStore.clear(); // deterministik: hanya sesi, preferensi lain aman
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,

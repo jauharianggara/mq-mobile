@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 import 'shell_screen.dart';
@@ -29,12 +28,10 @@ class _LoginScreenState extends State<LoginScreen> {
       final roles = (d?['user']?['roles'] as List?) ?? [];
       if (!roles.contains('USTADZ')) {
         setState(() { _error = 'Akun ini bukan ustadz — gunakan MQ Santri'; _loading = false; });
-        api.clearTokens();
+        api.clearTokens(); // sesi tidak dipakai — persist otomatis terhapus
         return;
       }
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('mq_at', api.accessToken ?? '');
-      await prefs.setString('mq_rt', api.refreshToken ?? '');
+      // token otomatis tersimpan permanen via MqSessionStore (jalur tunggal)
       if (!mounted) return;
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ShellScreen()));
     } on Exception catch (e) {

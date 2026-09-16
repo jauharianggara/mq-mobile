@@ -1,14 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
 
 import 'screens/login_screen.dart';
 import 'screens/shell_screen.dart';
 
 final MqApi api = MqApi();
+final navKey = GlobalKey<NavigatorState>();
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await MqSessionStore.init();
+  MqSessionStore.attach(api);
+  api.onSessionExpired = () {
+    MqSessionStore.clear();
+    navKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (_) => false,
+    );
+    final ctx = navKey.currentContext;
+    if (ctx != null) {
+      ScaffoldMessenger.maybeOf(ctx)?.showSnackBar(
+        const SnackBar(content: Text('Sesi Anda berakhir. Silakan masuk kembali.')),
+      );
+    }
+  };
   runApp(const MqSantriApp());
 }
 
@@ -20,6 +36,7 @@ class MqSantriApp extends StatelessWidget {
     return MaterialApp(
       title: 'MQ Santri',
       debugShowCheckedModeBanner: false,
+      navigatorKey: navKey,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       home: const SplashScreen(),
@@ -45,34 +62,47 @@ class _SplashScreenState extends State<SplashScreen> {
     // cek force-update dulu (splash — tanpa auth)
     final version = await api.appVersion('SANTRI_APP').catchError((_) => null);
     if (version != null && version['update_required'] == true) {
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const ForceUpdateScreen(url: null)),
-      );
+      _go(const ForceUpdateScreen(url: null));
       return;
     }
 
     // cek sesi tersimpan
-    final prefs = await SharedPreferences.getInstance();
-    final at = prefs.getString('mq_at');
-    final rt = prefs.getString('mq_rt');
-    if (at != null && rt != null) {
-      api.setTokens(at, rt);
-      final me = await api.me().catchError((_) => null);
-      if (me != null && me['status'] == 'ACTIVE') {
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ShellScreen()),
-        );
+    final at = MqSessionStore.access;
+    final rt = MqSessionStore.refresh;
+    if (at == null || rt == null) {
+      _go(const LoginScreen());
+      return;
+    }
+    api.setTokens(at, rt); // persist idempotent via callback
+    try {
+      final me = await api.me();
+      if (me is Map && me['status'] == 'ACTIVE') {
+        _go(const ShellScreen());
         return;
       }
+      // akun ada tapi status bukan ACTIVE (suspend/dll) → sesi tidak dipakai
+      await MqSessionStore.clear();
+      _go(const LoginScreen());
+    } on DioException catch (e) {
+      if (isUnreachableError(e)) {
+        // server tak terjangkau ≠ sesi mati — JANGAN paksa login
+        _go(ConnectionErrorScreen(onRetry: _checkSession));
+      } else {
+        // 401/403 final (refresh sudah dicoba interceptor) → sesi invalid
+        await MqSessionStore.clear();
+        _go(const LoginScreen());
+      }
+    } catch (_) {
+      // error tak dikenal — konservatif: jangan paksa login
+      _go(ConnectionErrorScreen(onRetry: _checkSession));
     }
-    if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+  }
+
+  /// Navigasi via navigatorKey global — aman dipanggil dari callback retry
+  /// meski state splash sudah di-dispose.
+  void _go(Widget screen) {
+    navKey.currentState?.pushReplacement(
+      MaterialPageRoute(builder: (_) => screen),
     );
   }
 

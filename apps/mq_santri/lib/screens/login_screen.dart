@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 import 'shell_screen.dart';
@@ -28,10 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final d = await api.login(_emailCtrl.text.trim(), _passCtrl.text);
       if (d != null && d['user']?['status'] == 'ACTIVE') {
-        // simpan sesi
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('mq_at', api.accessToken ?? '');
-        await prefs.setString('mq_rt', api.refreshToken ?? '');
+        // token otomatis tersimpan permanen via MqSessionStore (jalur tunggal)
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
