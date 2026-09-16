@@ -369,7 +369,7 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
             onPressed: _busy ? null : () => setState(() => _showDeclineForm = !_showDeclineForm),
             icon: const Icon(Icons.close),
             style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
-            label: const Text('Tolak — dana santri kembali penuh'),
+            label: const Text('Tolak Pesanan'),
           ),
         ];
       case 'CONFIRMED':
