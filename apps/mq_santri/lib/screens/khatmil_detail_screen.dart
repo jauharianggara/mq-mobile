@@ -104,14 +104,8 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
               ),
               const SizedBox(height: 8),
               if (status == null) ...[
-                if (_myAssignments != null && _myAssignments!.isNotEmpty)
-                  Text(
-                    'Satu santri satu juz — Anda sedang memegang Juz ${(_myAssignments!.first)['juz']} di khatmil ini.',
-                    style: TextStyle(fontSize: 13, color: Colors.grey[700]),
-                  )
-                else ...[
-                  Text('Juz ini masih kosong — Anda boleh mengambilnya.',
-                      style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+                Text('Juz ini kosong.', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+                if (_myAssignments == null || _myAssignments!.isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: ElevatedButton.icon(
@@ -120,7 +114,6 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
                       label: const Text('Ambil Juz Ini'),
                     ),
                   ),
-                ],
               ] else ...[
                 Text(
                   isMine ? 'Anda' : '${j['owner_name'] ?? '—'}',
