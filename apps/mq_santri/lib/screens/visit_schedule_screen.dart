@@ -4,9 +4,10 @@ import 'package:uuid/uuid.dart';
 import '../main.dart';
 import 'visit_status_screen.dart';
 
-/// Buat jadwal kunjungan (W2): tanggal & jam HANYA dari ketersediaan ustadz
-/// (server-authoritative via /visits/slots) → durasi 1-8 jam → nominal live
-/// (tarif × N) → buat pesanan + hold slot → lanjut bayar di layar status.
+/// Buat jadwal kunjungan (W2): langkah bernomor dengan progressive disclosure —
+/// 1) tanggal (hanya yang dibuka ustadz) → 2) jam mulai → 3) durasi 1-8 jam.
+/// Server-authoritative via /visits/slots; nominal live (tarif × N);
+/// buat pesanan + hold slot → lanjut bayar di layar status.
 class VisitScheduleScreen extends StatefulWidget {
   final Map<String, dynamic> u;
   final double lat;
@@ -62,8 +63,6 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
   /// Index tanggal yang terbuka (urut) — hanya ini yang tampil sebagai chip.
   List<int> get _openIdx => _openDays.toList()..sort();
 
-  /// Probe slot 14 hari ke depan (paralel, hours = durasi terpilih) untuk menandai
-  /// tanggal yang bisa dibooking — tanggal libur/tanpa jam terbuka tidak bisa dipilih.
   /// Kalender: hanya tanggal yang terbuka yang bisa dipilih.
   Future<void> _pickDate() async {
     final today = DateTime.now();
@@ -86,6 +85,8 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
     _loadSlots();
   }
 
+  /// Probe slot 14 hari ke depan (paralel, hours = durasi terpilih) untuk menandai
+  /// tanggal yang bisa dibooking — tanggal libur/tanpa jam terbuka tidak bisa dipilih.
   Future<void> _probeOpenDays() async {
     setState(() => _probing = true);
     final dates = _dates;
@@ -140,13 +141,26 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
     setState(() => _duration = h);
     // ketersediaan bergantung durasi (harus muat dalam rentang) → probe ulang
     _probeOpenDays();
-    _loadSlots();
   }
 
   Future<void> _create() async {
     if (_startTime == null) return;
+
+    // TODO: pakai timestamp server saat backend menyediakannya
+    final nowWib = DateTime.now().toUtc().add(const Duration(hours: 7));
+    final schedWib = DateTime(_dates[_selectedDay].year, _dates[_selectedDay].month,
+        _dates[_selectedDay].day, int.parse(_startTime!.split(':')[0]));
+    final minWib = nowWib.add(const Duration(hours: 2));
+    if (schedWib.isBefore(minWib)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Jadwal minimal 2 jam dari sekarang — pilih jam yang lebih siang.')));
+      return;
+    }
+
     setState(() => _creating = true);
     try {
+      final idem = const Uuid().v4();
       final d = await api.visitCreate(
         ustadzId: widget.u['ustadz_id'] as int,
         date: _ymd(_dates[_selectedDay]),
@@ -157,73 +171,97 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
         accuracyM: widget.accuracyM,
         addressLabel: widget.addressLabel,
         note: widget.note,
-        idempotencyKey: const Uuid().v4(),
+        idempotencyKey: idem,
       );
       if (!mounted) return;
-      final visitId = (d?['visit']?['id'] as num?)?.toInt();
-      final invoiceUrl = d?['invoice_url'] as String?;
-      if (visitId == null) throw 'gagal';
-      // tutup seluruh alur (jadwal ← profil ← daftar ustadz) → langsung layar status
-      Navigator.of(context)
-        ..pop()
-        ..pop()
-        ..pop();
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (_) => VisitStatusScreen(visitId: visitId, initialInvoiceUrl: invoiceUrl)));
-    } catch (e) {
+      if (d == null) throw Exception();
+      final visitId = d['id'] as int;
+      final done = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VisitStatusScreen(
+            visitId: visitId,
+            initialInvoiceUrl: (d['invoice_url'] as String?) ?? '',
+          ),
+        ),
+      );
+      if (done == true && mounted) Navigator.pop(context, true);
+    } catch (_) {
       if (!mounted) return;
       setState(() => _creating = false);
-      final es = e.toString();
-      String msg = 'Gagal membuat pesanan — coba lagi';
-      if (es.contains('409')) msg = 'Slot baru saja diambil orang lain — pilih jam lain';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-      _probeOpenDays();
-      _loadSlots();
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal membuat pesanan. Coba lagi.')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final u = widget.u;
+    final cs = Theme.of(context).colorScheme;
+    final ringkas = <String>[
+      if (!_probing && _openDays.contains(_selectedDay)) _tglLabel(_dates[_selectedDay]),
+      if (_startTime != null) _startTime!,
+      '${_duration} jam',
+    ];
+
     return Scaffold(
       appBar: AppBar(title: Text('Buat Jadwal — ${u['full_name'] ?? 'Ustadz'}')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // ==== Kartu ustadz + ringkasan pilihan ====
           Card(
             margin: EdgeInsets.zero,
-            child: ListTile(
-              leading: CircleAvatar(child: Text((u['full_name'] as String? ?? 'U')[0].toUpperCase())),
-              title: Text(u['full_name'] as String? ?? 'Ustadz',
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: Text('Tarif Rp ${_rp(_tarif)} / jam • ${_tglLabel(_dates[_selectedDay])}'
-                  '${_startTime != null ? ' • $_startTime' : ''}'),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                      child: Text((u['full_name'] as String? ?? 'U')[0].toUpperCase())),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(u['full_name'] as String? ?? 'Ustadz',
+                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                        const SizedBox(height: 2),
+                        Text('Rp ${_rp(_tarif)} / jam',
+                            style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
+                        if (ringkas.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                                color: cs.primary.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6)),
+                            child: Text(ringkas.join('  •  '),
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: cs.primary)),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 20),
 
-          // Tanggal (hanya yang terbuka)
-          Row(
-            children: [
-              const Expanded(
-                  child: Text('Pilih tanggal', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15))),
-              if (_probing)
-                const SizedBox(
-                    width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
-              IconButton(
+          // ================= LANGKAH 1 — TANGGAL =================
+          _stepHeader(context, 1, 'Pilih tanggal',
+              trailing: IconButton(
                 tooltip: 'Buka kalender',
                 icon: const Icon(Icons.calendar_month_outlined),
                 onPressed: _probing || _openIdx.isEmpty ? null : _pickDate,
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          const Text('Hanya tanggal yang dibuka ustadz yang tampil (tanggal libur dikecualikan).',
-              style: TextStyle(fontSize: 12, color: Colors.grey)),
-          const SizedBox(height: 8),
+              )),
+          const SizedBox(height: 10),
           if (_probing)
             const Padding(
-              padding: EdgeInsets.all(12),
+              padding: EdgeInsets.all(16),
               child: Center(child: CircularProgressIndicator()),
             )
           else if (_openIdx.isEmpty)
@@ -244,155 +282,186 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
             )
           else
             SizedBox(
-              height: 84,
+              height: 92,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _openIdx.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, k) {
-                  final i = _openIdx[k];
-                  final sel = _selectedDay == i;
-                  final d = _dates[i];
-                  return ChoiceChip(
-                  labelPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                  label: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(_tglLabel(d),
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: sel
-                                  ? Colors.white
-                                  : Theme.of(context).colorScheme.onSurface)),
-                      const SizedBox(height: 2),
-                      Text(i == 0 ? 'Hari ini' : (i == 1 ? 'Besok' : '${_hariPendek[d.weekday % 7]}'),
-                          style: TextStyle(fontSize: 10, color: sel ? Colors.white70 : Colors.grey)),
+                itemBuilder: (context, k) => _dateChip(context, _openIdx[k]),
+              ),
+            ),
+          if (_openIdx.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text('Hanya tanggal yang dibuka ustadz.',
+                  style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
+            ),
+
+          // ================= LANGKAH 2 — JAM MULAI =================
+          if (!_probing && _openDays.contains(_selectedDay)) ...[
+            const SizedBox(height: 20),
+            _stepHeader(context, 2, 'Pilih jam mulai'),
+            const SizedBox(height: 10),
+            if (_loadingSlots)
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (_slots.isEmpty)
+              Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.event_busy, color: Colors.grey),
+                      SizedBox(width: 10),
+                      Expanded(
+                          child: Text('Tidak ada jam tersedia — pilih tanggal atau durasi lain.',
+                              style: TextStyle(fontSize: 13))),
                     ],
                   ),
-                  selected: sel,
-                  onSelected: (_) {
-                    setState(() => _selectedDay = i);
-                    _loadSlots();
-                  },
-                  showCheckmark: false,
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 20),
+                ),
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _slots.map<Widget>((t) {
+                  final sel = _startTime == t;
+                  return ChoiceChip(
+                    label: Text(t, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    selected: sel,
+                    onSelected: (_) => setState(() => _startTime = t),
+                  );
+                }).toList(),
+              ),
+          ],
 
-          // Jam mulai
-          const Text('Pilih jam mulai', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-          const SizedBox(height: 4),
-          const Text('Slot yang sedang di-booking orang lain otomatis hilang (ditahan server).',
-              style: TextStyle(fontSize: 12, color: Colors.grey)),
-          const SizedBox(height: 8),
-          if (_loadingSlots)
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (!_openDays.contains(_selectedDay))
-            Card(
-              margin: EdgeInsets.zero,
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: const [
-                    Icon(Icons.event_busy, color: Colors.grey),
-                    SizedBox(width: 10),
-                    Expanded(
-                        child: Text('Tidak ada jadwal terbuka di tanggal ini.',
-                            style: TextStyle(fontSize: 13))),
-                  ],
-                ),
-              ),
-            )
-          else if (_slots.isEmpty)
-            Card(
-              margin: EdgeInsets.zero,
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: const [
-                    Icon(Icons.event_busy, color: Colors.grey),
-                    SizedBox(width: 10),
-                    Expanded(
-                        child: Text(
-                            'Semua jam terbuka sudah habis untuk durasi ini — coba durasi lebih pendek atau tanggal lain.',
-                            style: TextStyle(fontSize: 13))),
-                  ],
-                ),
-              ),
-            )
-          else
+          // ================= LANGKAH 3 — DURASI =================
+          if (_startTime != null) ...[
+            const SizedBox(height: 20),
+            _stepHeader(context, 3, 'Pilih durasi kunjungan'),
+            const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: _slots.map<Widget>((t) {
-                final sel = _startTime == t;
+              children: List.generate(8, (i) {
+                final h = i + 1;
                 return ChoiceChip(
-                  label: Text(t, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  selected: sel,
-                  onSelected: (_) => setState(() => _startTime = t),
+                  label: Text('$h jam'),
+                  selected: _duration == h,
+                  onSelected: (_) => _setDuration(h),
                 );
-              }).toList(),
+              }),
             ),
-          const SizedBox(height: 20),
+          ],
 
-          // Durasi (terakhir)
-          const Text('Pilih durasi kunjungan', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-          const SizedBox(height: 4),
-          const Text('Kalau durasi berubah, jam mulai yang tidak muat otomatis dikosongkan.',
-              style: TextStyle(fontSize: 12, color: Colors.grey)),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: List.generate(8, (i) {
-              final h = i + 1;
-              return ChoiceChip(
-                label: Text('$h jam'),
-                selected: _duration == h,
-                onSelected: (_) => _setDuration(h),
-              );
-            }),
-          ),
-          const SizedBox(height: 20),
-
-          // Rincian tagihan
-          Card(
-            margin: EdgeInsets.zero,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _row('Tarif', 'Rp ${_rp(_tarif)} / jam'),
-                  _row('Durasi', '$_duration jam ${_startTime ?? "-"}'),
-                  const Divider(height: 20),
-                  _row('Total', 'Rp ${_rp(_total)}', bold: true),
-                  _row('Patokan rumah', widget.addressLabel),
-                  if (widget.note != null && widget.note!.isNotEmpty) _row('Catatan', widget.note!),
-                  const SizedBox(height: 4),
-                  const Text(
-                      'Slot ditahan setelah pesanan dibuat. Belum dibayar saat invoice kedaluarsa → slot lepas otomatis.',
-                      style: TextStyle(fontSize: 11, color: Colors.grey)),
-                ],
+          // ================= RINCIAN + BAYAR =================
+          if (_startTime != null) ...[
+            const SizedBox(height: 20),
+            Card(
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _row('Tanggal', _tglLabel(_dates[_selectedDay])),
+                    _row('Jam mulai', _startTime!),
+                    _row('Durasi', '$_duration jam'),
+                    const Divider(height: 20),
+                    _row('Total', 'Rp ${_rp(_total)}', bold: true),
+                    _row('Patokan rumah', widget.addressLabel),
+                    if (widget.note != null && widget.note!.isNotEmpty) _row('Catatan', widget.note!),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: _creating || _startTime == null ? null : _create,
-            icon: _creating
-                ? const SizedBox(
-                    width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Icon(Icons.request_quote_outlined),
-            label: Text(_creating ? 'Membuat pesanan…' : 'Lanjut Pembayaran — Rp ${_rp(_total)}'),
-          ),
-          const SizedBox(height: 24),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: _creating ? null : _create,
+              icon: _creating
+                  ? const SizedBox(
+                      width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.request_quote_outlined),
+              label: Text(_creating ? 'Membuat pesanan…' : 'Lanjut Pembayaran — Rp ${_rp(_total)}'),
+            ),
+            const SizedBox(height: 8),
+            Text(
+                'Slot ditahan setelah pesanan dibuat. Belum dibayar saat invoice kedaluarsa → slot lepas otomatis.',
+                style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 24),
+          ],
         ],
+      ),
+    );
+  }
+
+  /// Header langkah: badge nomor + judul tebal.
+  Widget _stepHeader(BuildContext context, int no, String title, {Widget? trailing}) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Container(
+          width: 26,
+          height: 26,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: cs.primary, borderRadius: BorderRadius.circular(8)),
+          child: Text('$no',
+              style: const TextStyle(
+                  color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800)),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+            child: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15))),
+        if (trailing != null) trailing,
+      ],
+    );
+  }
+
+  /// Chip tanggal kontras-tinggi: hari (kecil) / tanggal (besar) / bulan (kecil).
+  Widget _dateChip(BuildContext context, int i) {
+    final cs = Theme.of(context).colorScheme;
+    final sel = _selectedDay == i;
+    final d = _dates[i];
+    final labelBawah = i == 0 ? 'Hari ini' : (i == 1 ? 'Besok' : _hariPendek[d.weekday % 7]);
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () {
+        setState(() => _selectedDay = i);
+        _loadSlots();
+      },
+      child: Container(
+        width: 72,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: sel ? cs.primary.withValues(alpha: 0.18) : Colors.transparent,
+          border: Border.all(color: sel ? cs.primary : cs.outlineVariant, width: sel ? 2 : 1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(labelBawah,
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: sel ? cs.primary : cs.onSurfaceVariant)),
+            const SizedBox(height: 2),
+            Text('${d.day}',
+                style: TextStyle(
+                    fontSize: 20,
+                    height: 1.1,
+                    fontWeight: FontWeight.w800,
+                    color: sel ? cs.primary : cs.onSurface)),
+            Text(_bulan[d.month - 1],
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: sel ? cs.primary : cs.onSurfaceVariant)),
+          ],
+        ),
       ),
     );
   }
