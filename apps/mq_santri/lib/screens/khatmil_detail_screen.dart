@@ -104,25 +104,23 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
               ),
               const SizedBox(height: 8),
               if (status == null) ...[
-                Text('Juz ini masih kosong — Anda boleh mengambilnya.', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: ElevatedButton.icon(
-                    onPressed: (_myAssignments == null || _myAssignments!.isEmpty)
-                        ? () { Navigator.pop(ctx); _claimJuz(j['juz'] as int); }
-                        : null,
-                    icon: const Icon(Icons.add_circle_outline, size: 18),
-                    label: const Text('Ambil Juz Ini'),
-                  ),
-                ),
                 if (_myAssignments != null && _myAssignments!.isNotEmpty)
+                  Text(
+                    'Satu santri satu juz — Anda sedang memegang Juz ${(_myAssignments!.first)['juz']} di khatmil ini.',
+                    style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                  )
+                else ...[
+                  Text('Juz ini masih kosong — Anda boleh mengambilnya.',
+                      style: TextStyle(fontSize: 13, color: Colors.grey[700])),
                   Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Text(
-                      'Satu santri satu juz — Anda sedang memegang Juz ${(_myAssignments!.first)['juz']}.',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    padding: const EdgeInsets.only(top: 12),
+                    child: ElevatedButton.icon(
+                      onPressed: () { Navigator.pop(ctx); _claimJuz(j['juz'] as int); },
+                      icon: const Icon(Icons.add_circle_outline, size: 18),
+                      label: const Text('Ambil Juz Ini'),
                     ),
                   ),
+                ],
               ] else ...[
                 Text(
                   isMine ? 'Anda' : '${j['owner_name'] ?? '—'}',
