@@ -83,21 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         childAspectRatio: 1.6,
                         children: [
                           KpiCard(
-                            label: 'Ayat Dihafal',
-                            value: '${_data?['memorization']?['ayat_passed'] ?? 0}',
-                            icon: Icons.fact_check_outlined,
-                          ),
-                          KpiCard(
-                            label: 'Surah Dimulai',
-                            value: '${_data?['memorization']?['surah_started'] ?? 0}',
-                            icon: Icons.auto_stories,
-                          ),
-                          KpiCard(
-                            label: 'Setoran Menunggu',
-                            value: '${_data?['memorization']?['setoran_pending'] ?? 0}',
-                            icon: Icons.schedule,
-                          ),
-                          KpiCard(
                             label: 'Notifikasi',
                             value: '${_data?['notification_unread'] ?? 0}',
                             icon: Icons.notifications_active_outlined,
@@ -147,17 +132,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 16),
                       ],
 
-                      // Pertanyaan terbaru
-                      if ((_data?['questions_recent'] as List?)?.isNotEmpty == true) ...[
-                        _sectionTitle('Pertanyaan Terbaru'),
-                        ...(_data!['questions_recent'] as List).map<Widget>((q) => Card(
-                          child: ListTile(
-                            leading: const Icon(Icons.question_answer_outlined, color: AppColors.primary),
-                            title: Text(q['title'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
-                            trailing: StatusBadge(status: q['status']),
-                          ),
-                        )),
-                      ],
                     ],
                   ),
                 ),

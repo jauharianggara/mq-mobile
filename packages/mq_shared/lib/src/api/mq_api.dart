@@ -236,6 +236,17 @@ class MqApi {
         if (accuracyM != null) 'accuracy_m': accuracyM,
       });
 
+  // ---- ustadz khatmil monitoring & penugasan (v2) ----
+  Future<dynamic> ustadzKhatmil() => get('/ustadz/khatmil');
+  Future<int> ustadzKhatmilPendingCount() async {
+    final d = await ustadzKhatmil().catchError((_) => null);
+    return ((d?['pending'] ?? []) as List).length;
+  }
+  Future<dynamic> ustadzKhatmilGroupAccept(int groupId) =>
+      post('/ustadz/khatmil-groups/$groupId/accept');
+  Future<dynamic> ustadzKhatmilGroupReject(int groupId) =>
+      post('/ustadz/khatmil-groups/$groupId/reject');
+
   // ---- ustadz side ----
   Future<dynamic> ustadzVisitSettings() => get('/ustadz/visits/settings');
   Future<Map<String, dynamic>?> ustadzPutVisitSettings({required bool isAccepting, required int maxActiveVisits}) =>

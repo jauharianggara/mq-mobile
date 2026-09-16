@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
 
 import 'home_screen.dart';
-import 'setoran_screen.dart';
-import 'tanya_screen.dart';
+import 'khatmil_ustadz_screen.dart';
 import 'visit_incoming_screen.dart';
 import 'profile_screen.dart';
 
@@ -19,9 +18,8 @@ class _ShellScreenState extends State<ShellScreen> {
 
   final _screens = const [
     HomeScreen(),
-    SetoranScreen(),
-    TanyaScreen(),
     VisitIncomingScreen(),
+    KhatmilUstadzScreen(),
     ProfileScreen(),
   ];
 
@@ -34,9 +32,8 @@ class _ShellScreenState extends State<ShellScreen> {
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.fact_check_outlined), selectedIcon: Icon(Icons.fact_check), label: 'Setoran'),
-          NavigationDestination(icon: Icon(Icons.question_answer_outlined), selectedIcon: Icon(Icons.question_answer), label: 'Tanya'),
           NavigationDestination(icon: Icon(Icons.two_wheeler_outlined), selectedIcon: Icon(Icons.two_wheeler), label: 'Kunjungan'),
+          NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'Khatmil'),
           NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
         ],
       ),
