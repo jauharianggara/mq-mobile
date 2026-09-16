@@ -185,7 +185,7 @@ class _VisitIncomingScreenState extends State<VisitIncomingScreen> {
                             padding: const EdgeInsets.all(16),
                             child: Text(
                               incoming.isEmpty
-                                  ? 'Belum ada permintaan kunjungan. Atur tarif & status menerima di pengaturan (ikon roda gigi).'
+                                  ? 'Belum ada permintaan kunjungan. Atur infaq & status menerima di pengaturan (ikon roda gigi).'
                                   : 'Belum ada kunjungan terkonfirmasi.',
                               style: TextStyle(fontSize: 13, color: Theme.of(context).hintColor),
                             ),

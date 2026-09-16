@@ -6,7 +6,7 @@ import 'visit_status_screen.dart';
 
 /// Buat jadwal kunjungan (W2): langkah bernomor dengan progressive disclosure —
 /// 1) tanggal (hanya yang dibuka ustadz) → 2) jam mulai → 3) durasi 1-8 jam.
-/// Server-authoritative via /visits/slots; nominal live (tarif × N);
+/// Server-authoritative via /visits/slots; nominal live (infaq × N);
 /// buat pesanan + hold slot → lanjut bayar di layar status.
 class VisitScheduleScreen extends StatefulWidget {
   final Map<String, dynamic> u;
@@ -43,8 +43,8 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
   bool _probing = true;
   bool _creating = false;
 
-  int get _tarif => (widget.u['price_per_hour'] as num?)?.toInt() ?? 0;
-  int get _total => _tarif * _duration;
+  int get _infaq => (widget.u['price_per_hour'] as num?)?.toInt() ?? 0;
+  int get _total => _infaq * _duration;
 
   List<DateTime> get _dates =>
       List.generate(14, (i) => DateTime.now().add(Duration(days: i)));
@@ -226,7 +226,7 @@ class _VisitScheduleScreenState extends State<VisitScheduleScreen> {
                         Text(u['full_name'] as String? ?? 'Ustadz',
                             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                         const SizedBox(height: 2),
-                        Text('Rp ${_rp(_tarif)} / jam',
+                        Text('Rp ${_rp(_infaq)} / jam',
                             style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
                         if (ringkas.isNotEmpty) ...[
                           const SizedBox(height: 6),

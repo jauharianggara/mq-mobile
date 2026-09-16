@@ -339,7 +339,7 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
           children: [
             _row(Icons.event, 'Jadwal', _fmt(v['scheduled_at'])),
             _row(Icons.timelapse, 'Durasi', '${v['duration_hours'] ?? '-'} jam'),
-            _row(Icons.payments_outlined, 'Tarif', 'Rp ${_rp(v['price_per_hour'])}/jam'),
+            _row(Icons.payments_outlined, 'Infaq', 'Rp ${_rp(v['price_per_hour'])}/jam'),
             _row(Icons.place_outlined, 'Patokan', v['address_label'] ?? '-'),
             if ((v['note'] as String?)?.isNotEmpty == true) _row(Icons.notes, 'Catatan', v['note']),
             if (pay != null) _row(Icons.payment_outlined, 'Pembayaran', pay['status'] ?? '-'),

@@ -66,16 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 16),
                   _navCard(
                     context,
-                    icon: Icons.two_wheeler,
-                    title: 'Kunjungan',
-                    subtitle: 'Permintaan kunjungan & jadwal terjadwal',
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const VisitIncomingScreen())),
-                  ),
-                  const SizedBox(height: 12),
-                  _navCard(
-                    context,
-                    icon: Icons.menu_book,
+                    icon: Icons.people,
                     title: 'Khatmil',
                     subtitle: _assignPending > 0
                         ? '$_assignPending penugasan menunggu ACC'
@@ -83,6 +74,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     badge: _assignPending > 0 ? '$_assignPending' : null,
                     onTap: () => Navigator.push(context,
                         MaterialPageRoute(builder: (_) => const KhatmilUstadzScreen())),
+                  ),
+                  const SizedBox(height: 12),
+                  _navCard(
+                    context,
+                    icon: Icons.two_wheeler,
+                    title: 'Pesan',
+                    subtitle: 'Permintaan kunjungan & jadwal terjadwal',
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const VisitIncomingScreen())),
                   ),
                   const SizedBox(height: 12),
                   Card(

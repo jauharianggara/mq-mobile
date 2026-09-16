@@ -3,7 +3,7 @@ import 'package:mq_shared/mq_shared.dart';
 
 import '../main.dart';
 
-/// Pengaturan Panggil Ustadz v2 (W3): status menerima, kapasitas, TARIF PER JAM,
+/// Pengaturan Panggil Ustadz v2 (W3): status menerima, kapasitas, INFAQ PER JAM,
 /// dan KETERSEDIAAN — jadwal mingguan berulang (7 hari, maks 3 rentang/hari,
 /// min 1 jam) + tanggal libur per tanggal. Perubahan ketersediaan auto-save
 /// per aksi & berlaku segera; booking yang sudah terjadwal tidak terpengaruh.
@@ -24,7 +24,7 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
   List<dynamic> _blackouts = [];
   bool _loading = true;
   bool _saving = false;
-  final _tarifCtrl = TextEditingController();
+  final _infaqCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -34,7 +34,7 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
 
   @override
   void dispose() {
-    _tarifCtrl.dispose();
+    _infaqCtrl.dispose();
     super.dispose();
   }
 
@@ -48,7 +48,7 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
         _accepting = s?['is_accepting'] == true;
         _maxActive = (s?['max_active_visits'] as num?)?.toInt() ?? 2;
         _pricePerHour = (s?['price_per_hour'] as num?)?.toInt() ?? 10000;
-        _tarifCtrl.text = '$_pricePerHour';
+        _infaqCtrl.text = '$_pricePerHour';
         _slots = (a?['slots'] as List? ?? []);
         _blackouts = (a?['blackouts'] as List? ?? []);
         _loading = false;
@@ -62,16 +62,16 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
   }
 
   Future<void> _save() async {
-    final tarif = int.tryParse(_tarifCtrl.text.trim());
-    if (tarif == null || tarif < 10000) {
+    final infaq = int.tryParse(_infaqCtrl.text.trim());
+    if (infaq == null || infaq < 10000) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tarif minimal Rp 10.000 / jam')));
+          const SnackBar(content: Text('Infaq minimal Rp 10.000 / jam')));
       return;
     }
     setState(() => _saving = true);
     try {
       await api.ustadzPutVisitSettings(
-          isAccepting: _accepting, maxActiveVisits: _maxActive, pricePerHour: tarif);
+          isAccepting: _accepting, maxActiveVisits: _maxActive, pricePerHour: infaq);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
@@ -226,10 +226,10 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
                         ),
                         const SizedBox(height: 8),
                         TextField(
-                          controller: _tarifCtrl,
+                          controller: _infaqCtrl,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
-                            labelText: 'Tarif per jam (Rp, min 10.000)',
+                            labelText: 'Infaq per jam (Rp, min 10.000)',
                             prefixText: 'Rp ',
                             isDense: true,
                           ),

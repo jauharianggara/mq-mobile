@@ -130,7 +130,7 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
   String _rp(int n) => n.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => '.');
 }
 
-/// Halaman profil ustadz — foto, rating, tarif/jam, review santri lain, tombol Buat Jadwal.
+/// Halaman profil ustadz — foto, rating, infaq/jam, review santri lain, tombol Buat Jadwal.
 class UstadzProfilePage extends StatefulWidget {
   final Map<String, dynamic> u;
   final double lat;
@@ -245,7 +245,7 @@ class _UstadzProfilePageState extends State<UstadzProfilePage> {
             margin: EdgeInsets.zero,
             child: ListTile(
               leading: const Icon(Icons.sell_outlined),
-              title: const Text('Tarif per jam', style: TextStyle(fontSize: 13, color: Colors.grey)),
+              title: const Text('Infaq per jam', style: TextStyle(fontSize: 13, color: Colors.grey)),
               subtitle: Text('Rp ${_rp(price)} / jam',
                   style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
             ),

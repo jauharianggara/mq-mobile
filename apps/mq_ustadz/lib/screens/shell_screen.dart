@@ -18,8 +18,8 @@ class _ShellScreenState extends State<ShellScreen> {
 
   final _screens = const [
     HomeScreen(),
-    VisitIncomingScreen(),
     KhatmilUstadzScreen(),
+    VisitIncomingScreen(),
     ProfileScreen(),
   ];
 
@@ -32,8 +32,8 @@ class _ShellScreenState extends State<ShellScreen> {
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.two_wheeler_outlined), selectedIcon: Icon(Icons.two_wheeler), label: 'Kunjungan'),
-          NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'Khatmil'),
+          NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people), label: 'Khatmil'),
+          NavigationDestination(icon: Icon(Icons.two_wheeler_outlined), selectedIcon: Icon(Icons.two_wheeler), label: 'Pesan'),
           NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
         ],
       ),
