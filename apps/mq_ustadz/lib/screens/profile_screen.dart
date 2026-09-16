@@ -13,10 +13,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _me;
-  Map<String, dynamic>? _availability;
   Map<String, dynamic>? _stats;
-  List<dynamic>? _specializations;
-  List<dynamic>? _categories;
+  bool _verified = false;
   int _walletBalance = -1; // -1 = belum termuat
   bool _loading = true;
 
@@ -27,108 +25,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final results = await Future.wait([
         api.me(),
-        api.get('/me/ustadz/availability'),
         api.get('/ustadz/me/stats'),
-        api.get('/me/ustadz/specializations'),
-        api.get('/question-categories').catchError((_) => null),
+        // hanya untuk badge Terverifikasi (flag verified_at ustadz_profiles)
+        api.get('/me/ustadz/availability').catchError((_) => null),
         api.walletBalance().catchError((_) => -1),
       ]);
       setState(() {
         _me = results[0];
-        _availability = results[1];
-        _stats = results[2];
-        _specializations = results[3] as List? ?? [];
-        _categories = results[4] as List? ?? [];
-        _walletBalance = results[5] as int;
+        _stats = results[1];
+        _verified = (results[2] as Map?)?['verified'] == true;
+        _walletBalance = results[3] as int;
         _loading = false;
       });
     } catch (_) { setState(() => _loading = false); }
-  }
-
-  Future<void> _toggleAccepting(bool value) async {
-    try {
-      await api.put('/me/ustadz/availability', data: {
-        'is_accepting_questions': value,
-        'max_active_questions': _availability?['max_active_questions'] ?? 10,
-      });
-      setState(() => _availability?['is_accepting_questions'] = value);
-    } catch (_) {}
-  }
-
-  Future<void> _editMaxQuestions() async {
-    final ctrl = TextEditingController(text: _availability?['max_active_questions']?.toString() ?? '10');
-    final result = await showDialog<int>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Maksimal Pertanyaan Aktif'),
-        content: TextField(
-          controller: ctrl,
-          decoration: const InputDecoration(labelText: 'Jumlah (1-100)'),
-          keyboardType: TextInputType.number,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, int.tryParse(ctrl.text)),
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
-    );
-    if (result == null || result < 1 || result > 100) return;
-    try {
-      await api.put('/me/ustadz/availability', data: {
-        'is_accepting_questions': _availability?['is_accepting_questions'] ?? true,
-        'max_active_questions': result,
-      });
-      setState(() => _availability?['max_active_questions'] = result);
-    } catch (_) {}
-  }
-
-  Future<void> _editSpecializations() async {
-    final selected = (_specializations ?? []).map((s) => s['category_id'] as int).toSet();
-
-    final result = await showDialog<Set<int>>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Spesialisasi'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView(
-              shrinkWrap: true,
-              children: (_categories ?? []).map((c) {
-                final id = c['id'] as int;
-                return CheckboxListTile(
-                  value: selected.contains(id),
-                  onChanged: (v) {
-                    setDialogState(() {
-                      if (v == true) { selected.add(id); } else { selected.remove(id); }
-                    });
-                  },
-                  title: Text(c['name'], style: const TextStyle(fontSize: 14)),
-                  dense: true,
-                  activeColor: AppColors.primary,
-                );
-              }).toList(),
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, selected),
-              child: const Text('Simpan'),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (result == null) return;
-    try {
-      await api.put('/me/ustadz/specializations', data: {'category_ids': result.toList()});
-      _load();
-    } catch (_) {}
   }
 
   Future<void> _logout() async {
@@ -168,7 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                 ),
                 const SizedBox(height: 4),
-                if (_availability?['verified'] == true)
+                if (_verified)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
@@ -209,52 +118,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           MaterialPageRoute(builder: (_) => const UstadzWalletScreen()));
                       _load();
                     },
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                // Availability
-                Card(
-                  child: Column(
-                    children: [
-                      SwitchListTile(
-                        value: _availability?['is_accepting_questions'] ?? false,
-                        onChanged: _toggleAccepting,
-                        title: const Text('Menerima Pertanyaan Baru', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                        subtitle: Text(
-                          _availability?['is_accepting_questions'] == true
-                              ? 'Pertanyaan baru akan ditugaskan ke saya'
-                              : 'Tidak menerima pertanyaan baru',
-                          style: const TextStyle(fontSize: 11),
-                        ),
-                        activeColor: AppColors.primary,
-                      ),
-                      Divider(height: 1, color: Colors.grey[200]),
-                      ListTile(
-                        title: const Text('Maksimal Pertanyaan Aktif', style: TextStyle(fontSize: 14)),
-                        trailing: Text(
-                          '${_availability?['max_active_questions'] ?? 0}',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary),
-                        ),
-                        onTap: _editMaxQuestions,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                // Specializations
-                Card(
-                  child: ListTile(
-                    title: const Text('Spesialisasi', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: (_specializations ?? []).isEmpty
-                        ? const Text('Belum diatur — pertanyaan tidak akan diarahkan ke Anda', style: TextStyle(fontSize: 11))
-                        : Text(
-                            (_specializations!).map((s) => s['name']).join(', '),
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                    trailing: const Icon(Icons.edit, size: 18, color: AppColors.primary),
-                    onTap: _editSpecializations,
                   ),
                 ),
                 const SizedBox(height: 8),
