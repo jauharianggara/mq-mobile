@@ -346,6 +346,15 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
     );
   }
 
+  /// Waktu kunjungan berakhir (UTC) = scheduled_at + duration_hours.
+  /// Aturan 16Sep: ustadz hanya bisa menandai selesai SETELAH waktu ini.
+  DateTime? _visitEndAt(Map<String, dynamic> v) {
+    final s = v['scheduled_at'] as String?;
+    if (s == null) return null;
+    final dur = (v['duration_hours'] as num?)?.toInt() ?? 0;
+    return DateTime.tryParse(s)?.add(Duration(hours: dur));
+  }
+
   List<Widget> _actions(Map<String, dynamic> v) {
     switch (v['status'] as String) {
       case 'WAITING_CONFIRM':
@@ -364,6 +373,8 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
           ),
         ];
       case 'CONFIRMED':
+        final end = _visitEndAt(v);
+        final canComplete = end == null || DateTime.now().toUtc().isAfter(end);
         return [
           FilledButton.icon(
             onPressed: () => Navigator.push(context,
@@ -373,10 +384,21 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
-            onPressed: _busy ? null : _complete,
+            onPressed: (_busy || !canComplete) ? null : _complete,
             icon: const Icon(Icons.task_alt),
             label: const Text('Tandai Kunjungan Selesai'),
           ),
+          if (!canComplete)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                end != null
+                    ? 'Belum selesai waktunya — bisa ditandai selesai setelah ${end.toLocal().hour.toString().padLeft(2, '0')}.${end.toLocal().minute.toString().padLeft(2, '0')} WIB.'
+                    : 'Belum selesai waktunya — kunjungan bisa ditandai selesai setelah jam kunjungan berakhir.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ),
         ];
       case 'COMPLETED':
         return [

@@ -414,7 +414,15 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
             label: const Text('Chat dengan Ustadz'),
           ),
           const SizedBox(height: 8),
-          OutlinedButton(onPressed: _cancel, child: const Text('Batalkan pesanan')),
+          // Aturan 16Sep: setelah ustadz ACC, santri tidak bisa membatalkan.
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              'Sudah dikonfirmasi ustadz — pesanan tidak bisa dibatalkan. Hubungi admin pondok bila ada darurat.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ),
         ];
       case 'COMPLETED':
         return [
