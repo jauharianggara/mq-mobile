@@ -18,7 +18,6 @@ class VisitRequestScreen extends StatefulWidget {
 
 class _VisitRequestScreenState extends State<VisitRequestScreen> {
   Map<String, dynamic>? _v;
-  List<dynamic> _requesterReviews = [];
   bool _loading = true;
   bool _busy = false;
   Timer? _poll;
@@ -41,7 +40,7 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
     super.dispose();
   }
 
-  Future<void> _load({bool withReviews = true}) async {
+  Future<void> _load() async {
     try {
       final d = await api.visitDetail(widget.visitId);
       if (!mounted) return;
@@ -52,15 +51,9 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
       final s = d?['status'];
       if (s == 'WAITING_CONFIRM') {
         _poll?.cancel();
-        _poll = Timer.periodic(const Duration(seconds: 8), (_) => _load(withReviews: false));
+        _poll = Timer.periodic(const Duration(seconds: 8), (_) => _load());
       } else {
         _poll?.cancel();
-      }
-      if (withReviews && s == 'WAITING_CONFIRM') {
-        try {
-          final r = await api.ustadzRequesterReviews(widget.visitId);
-          if (mounted) setState(() => _requesterReviews = r);
-        } catch (_) {}
       }
     } catch (_) {
       if (!mounted) return;
@@ -273,7 +266,7 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
             Row(
               children: [
                 Expanded(
-                  child: Text('${v['service_name']} — Rp ${_rp(v['price_amount'])}',
+                  child: Text('Kunjungan ${v['duration_hours'] ?? '-'} jam — Rp ${_rp(v['price_total'])}',
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 ),
                 StatusBadge(status: v['status']),
@@ -299,7 +292,7 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
         child: Column(
           children: [
             _row(Icons.event, 'Jadwal', _fmt(v['scheduled_at'])),
-            _row(Icons.timelapse, 'Durasi', '${v['duration_minutes']} menit'),
+            _row(Icons.timelapse, 'Durasi', '${v['duration_hours'] ?? '-'} jam'),
             _row(Icons.person_outline, 'Santri', v['requester']?['full_name'] ?? '-'),
             _row(Icons.place_outlined, 'Patokan', v['address_label'] ?? '-'),
             if (v['status'] == 'CONFIRMED' && v['lat'] != null)
@@ -340,21 +333,13 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            if (_requesterReviews.isEmpty)
-              const Text('Belum ada penilaian dari ustadz lain untuk santri ini.',
+            if (r['rating_avg'] == null)
+              const Text('Santri baru — belum pernah dinilai ustadz lain.',
                   style: TextStyle(fontSize: 12))
             else
-              ..._requesterReviews.take(5).map<Widget>((x) {
-                final m = x as Map<String, dynamic>;
-                return ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading: Text('★${m['rating']}',
-                      style: const TextStyle(color: Color(0xFFC9A227), fontWeight: FontWeight.w700)),
-                  title: Text(m['comment'] ?? '(tanpa catatan)', style: const TextStyle(fontSize: 13)),
-                  subtitle: Text('oleh Ustadz ${m['reviewer_first_name']}', style: const TextStyle(fontSize: 11)),
-                );
-              }),
+              const Text(
+                  'Rating dihitung dari penilaian ustadz lain setelah kunjungan selesai (privat).',
+                  style: TextStyle(fontSize: 12, color: Colors.grey)),
           ],
         ),
       ),

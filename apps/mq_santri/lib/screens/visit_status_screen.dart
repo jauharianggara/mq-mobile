@@ -22,6 +22,8 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
   bool _loading = true;
   String? _error;
   Timer? _poll;
+  int _saldo = -1; // -1 = belum termuat
+  bool _payingDeposit = false;
   // form review inline (bukan popup)
   int _rating = 5;
   final _reviewCtrl = TextEditingController();
@@ -58,6 +60,13 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
         _error = null;
       });
       _schedulePoll(d?['status'] as String?);
+      // saldo utk tombol bayar deposit (hanya perlu saat REQUESTED)
+      if (d?['status'] == 'REQUESTED' && _saldo < 0) {
+        try {
+          final b = await api.walletBalance();
+          if (mounted) setState(() => _saldo = b);
+        } catch (_) {}
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -100,13 +109,34 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
     }
   }
 
+  /// Bayar langsung dari deposit (saldo) — uang tidak keluar aplikasi.
+  Future<void> _payDeposit() async {
+    setState(() => _payingDeposit = true);
+    try {
+      final d = await api.visitPayDeposit(widget.visitId);
+      if (!mounted) return;
+      final sisa = (d?['balance'] as num?)?.toInt();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Pembayaran berhasil${sisa != null ? ' — sisa deposit Rp ${_rp(sisa)}' : ''}')));
+      _saldo = -1;
+      _load();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Pembayaran deposit gagal / saldo tidak cukup')));
+      }
+    } finally {
+      if (mounted) setState(() => _payingDeposit = false);
+    }
+  }
+
   Future<void> _cancel() async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Batalkan pesanan?'),
-        content: const Text('Pembatalan ≥2 jam sebelum jadwal: dana dikembalikan penuh.\n'
-            '<2 jam: dana menjadi milik ustadz.'),
+        content: const Text('Pembatalan ≥2 jam sebelum jadwal: dana kembali penuh ke deposit Anda.\n'
+            '<2 jam: dana menjadi kompensasi ustadz.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Tidak')),
           FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Ya, batalkan')),
@@ -168,7 +198,7 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      v?['service_name'] ?? '-',
+                                      'Kunjungan ${v?['duration_hours'] ?? '-'} jam',
                                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
                                     ),
                                   ),
@@ -176,7 +206,7 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
                                 ],
                               ),
                               const SizedBox(height: 4),
-                              Text('${v?['ustadz']?['full_name'] ?? 'Ustadz'} • Rp ${_rp(v?['price_amount'])}'),
+                              Text('${v?['ustadz']?['full_name'] ?? 'Ustadz'} • Rp ${_rp(v?['price_total'])}'),
                               const SizedBox(height: 12),
                               _timeline(v?['status'] as String? ?? ''),
                             ],
@@ -308,6 +338,8 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _row(Icons.event, 'Jadwal', _fmt(v['scheduled_at'])),
+            _row(Icons.timelapse, 'Durasi', '${v['duration_hours'] ?? '-'} jam'),
+            _row(Icons.payments_outlined, 'Tarif', 'Rp ${_rp(v['price_per_hour'])}/jam'),
             _row(Icons.place_outlined, 'Patokan', v['address_label'] ?? '-'),
             if ((v['note'] as String?)?.isNotEmpty == true) _row(Icons.notes, 'Catatan', v['note']),
             if (pay != null) _row(Icons.payment_outlined, 'Pembayaran', pay['status'] ?? '-'),
@@ -326,12 +358,42 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
     final s = v['status'] as String;
     switch (s) {
       case 'REQUESTED':
+        final total = (v['price_total'] as num?)?.toInt() ?? 0;
+        final saldoCukup = _saldo >= total;
         return [
-          FilledButton.icon(
-            onPressed: _pay,
-            icon: const Icon(Icons.request_quote),
-            label: Text('Bayar Rp ${_rp(v['price_amount'])} (QRIS/VA/e-wallet)'),
-          ),
+          if (saldoCukup) ...[
+            FilledButton.icon(
+              onPressed: _payingDeposit ? null : _payDeposit,
+              icon: _payingDeposit
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.account_balance_wallet),
+              label: Text('Bayar pakai Deposit — Rp ${_rp(total)}'),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _pay,
+              icon: const Icon(Icons.qr_code),
+              label: const Text('Bayar QRIS / VA / e-wallet'),
+            ),
+          ] else ...[
+            FilledButton.icon(
+              onPressed: _pay,
+              icon: const Icon(Icons.request_quote),
+              label: Text('Bayar Rp ${_rp(total)} (QRIS/VA/e-wallet)'),
+            ),
+            if (_saldo >= 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Deposit Anda Rp ${_rp(_saldo)} — kurang dari tagihan. Top-up di halaman Deposit (Profil) agar bisa bayar langsung.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ),
+          ],
           const SizedBox(height: 8),
           OutlinedButton(onPressed: _cancel, child: const Text('Batalkan pesanan')),
         ];

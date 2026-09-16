@@ -211,11 +211,11 @@ class _VisitIncomingScreenState extends State<VisitIncomingScreen> {
           _load();
         },
         leading: CircleAvatar(child: Text((r['full_name'] as String? ?? 'S')[0].toUpperCase())),
-        title: Text('${r['full_name'] ?? 'Santri'} • ${v['service_name'] ?? ''}',
+        title: Text('${r['full_name'] ?? 'Santri'} • ${v['duration_hours'] ?? '-'} jam',
             style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
-          child: Text('${_fmt(v['scheduled_at'] as String?)} • Rp ${_rp(v['price_amount'])}'),
+          child: Text('${_fmt(v['scheduled_at'] as String?)} • Rp ${_rp(v['price_total'])}'),
         ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -246,7 +246,7 @@ class _VisitIncomingScreenState extends State<VisitIncomingScreen> {
           _load();
         },
         leading: const Icon(Icons.event_available, color: Color(0xFF16A34A)),
-        title: Text('${v['service_name'] ?? ''} — ${v['requester']?['full_name'] ?? 'Santri'}',
+        title: Text('Kunjungan ${v['duration_hours'] ?? '-'} jam — ${v['requester']?['full_name'] ?? 'Santri'}',
             style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),

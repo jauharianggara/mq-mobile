@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
 import '../main.dart';
 import 'login_screen.dart';
+import 'notification_screen.dart';
+import 'wallet_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -65,9 +67,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 8),
                 Center(child: StatusBadge(status: _user?['status'] ?? 'ACTIVE')),
                 const SizedBox(height: 24),
-                _tile(Icons.fact_check_outlined, 'Riwayat Setoran', () {}),
-                _tile(Icons.bookmark_outline, 'Bookmark', () {}),
-                _tile(Icons.notifications_outlined, 'Notifikasi', () {}),
+                _tile(Icons.account_balance_wallet_outlined, 'Deposit', () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen()));
+                }),
+                _tile(Icons.notifications_outlined, 'Notifikasi', () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
+                }),
                 _tile(Icons.settings_outlined, 'Pengaturan', () {}),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(

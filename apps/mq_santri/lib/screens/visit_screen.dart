@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:mq_shared/mq_shared.dart';
 
 import '../main.dart';
-import 'visit_create_screen.dart';
+import 'visit_pick_ustadz_screen.dart';
 import 'visit_status_screen.dart';
 
 /// Tab "Pesan" — daftar pesanan kunjungan ustadz + entry point pesan baru.
@@ -22,6 +23,39 @@ class _VisitScreenState extends State<VisitScreen> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  /// Ambil lokasi santri dulu — daftar ustadz diurutkan dari yang terdekat.
+  Future<String?> _openPanggil() async {
+    LocationPermission perm;
+    try {
+      perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+        return 'Izin lokasi diperlukan untuk mencari ustadz terdekat.';
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+      if (!mounted) return null;
+      final done = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VisitPickUstadzScreen(
+            lat: pos.latitude,
+            lng: pos.longitude,
+            accuracyM: pos.accuracy.round(),
+            addressLabel: '',
+          ),
+        ),
+      );
+      if (done == true) _load();
+      return null;
+    } catch (_) {
+      return 'Tidak bisa mengambil lokasi. Coba lagi.';
+    }
   }
 
   Future<void> _load() async {
@@ -57,15 +91,16 @@ class _VisitScreenState extends State<VisitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Pesan Ustadz'), automaticallyImplyLeading: false),
+      appBar: AppBar(title: const Text('Panggil Ustadz'), automaticallyImplyLeading: false),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final done = await Navigator.push<bool>(context,
-              MaterialPageRoute(builder: (_) => const VisitCreateScreen()));
-          if (done == true) _load();
+          final err = await _openPanggil();
+          if (err != null && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
+          }
         },
         icon: const Icon(Icons.add),
-        label: const Text('Pesan Ustadz'),
+        label: const Text('Panggil Ustadz'),
       ),
       body: RefreshIndicator(
         onRefresh: _load,
@@ -82,7 +117,7 @@ class _VisitScreenState extends State<VisitScreen> {
                         EmptyState(
                           icon: Icons.two_wheeler_outlined,
                           title: 'Belum ada pesanan',
-                          subtitle: 'Pesan ustadz terdekat untuk tahsin,\nmurajaah, tahlil, atau konsultasi.',
+                          subtitle: 'Panggil ustadz terdekat untuk ngaji di rumah —\npilih jadwal dari jam ketersediaannya.',
                         ),
                       ])
                     : ListView.separated(
@@ -105,7 +140,7 @@ class _VisitScreenState extends State<VisitScreen> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      '${v['service_name'] ?? 'Kunjungan'} — ${v['ustadz']?['full_name'] ?? 'Ustadz'}',
+                                      'Kunjungan ${v['duration_hours'] ?? '-'} jam — ${v['ustadz']?['full_name'] ?? 'Ustadz'}',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(fontWeight: FontWeight.w600),
@@ -118,7 +153,7 @@ class _VisitScreenState extends State<VisitScreen> {
                               subtitle: Padding(
                                 padding: const EdgeInsets.only(top: 4),
                                 child: Text(
-                                  '${_fmtDate(v['scheduled_at'] as String?)}  •  Rp ${_fmtRp(v['price_amount'])}'
+                                  '${_fmtDate(v['scheduled_at'] as String?)}  •  Rp ${_fmtRp(v['price_total'])}'
                                   '${active ? '  •  ketuk utk detail' : ''}',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,

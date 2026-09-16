@@ -1,0 +1,306 @@
+{
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/android/app/build.gradle.kts": {
+    "mtime": 1789431532434.167,
+    "hash": "b1e3ccc1d6129ebd82d8d480aae0399d"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/android/app/src/main/kotlin/com/mq/mq_santri/MainActivity.kt": {
+    "mtime": 1789426220573.9753,
+    "hash": "6107063eff80ede26e3ba9ad1e1d47e5"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/android/build.gradle.kts": {
+    "mtime": 1789426220573.9753,
+    "hash": "f11f360aed44d4f6871b398346af14f0"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/android/settings.gradle.kts": {
+    "mtime": 1789426220606.574,
+    "hash": "094e3cafe85d4dbf756dfe0bd754c6cb"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/main.dart": {
+    "mtime": 1789526658972.4773,
+    "hash": "c45bdd6a79fdb0575b8229fc4a3f14be"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/hafalan_detail_screen.dart": {
+    "mtime": 1789428574397.9333,
+    "hash": "61e5ded89598ddc68786a93fd5b223d6"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/hafalan_screen.dart": {
+    "mtime": 1789428845349.209,
+    "hash": "e2204e48e3097a99037c39eeb5424e98"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/hafalan_submit_screen.dart": {
+    "mtime": 1789428845350.231,
+    "hash": "8444101254d95e776ba118cd9873847a"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/home_screen.dart": {
+    "mtime": 1789514245725.2817,
+    "hash": "9d60f91f46f8d4c789c0e00e312bdeeb"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/khatmil_detail_screen.dart": {
+    "mtime": 1789466368059.7869,
+    "hash": "6bd34bc41f70117a69c4826821e29a88"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/khatmil_leaderboard_screen.dart": {
+    "mtime": 1789466458676.959,
+    "hash": "020340fd6369e4b6b7b22eac8f67493c"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/khatmil_manual_progress_screen.dart": {
+    "mtime": 1789464868167.234,
+    "hash": "93b16fba7d81451f6fcb6cd78e51cb4b"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/khatmil_reader_screen.dart": {
+    "mtime": 1789461413382.755,
+    "hash": "15090e1282d70f908b0baf8a0e5b9768"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/khatmil_screen.dart": {
+    "mtime": 1789483958762.1523,
+    "hash": "bfa38028aeb4a209025bf56041e2adb2"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/login_screen.dart": {
+    "mtime": 1789524574887.1843,
+    "hash": "686f622fc9f4bbb4df310383576d3494"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/notification_screen.dart": {
+    "mtime": 1789467872369.7266,
+    "hash": "8be68b2ce890e6c696b202d99ce2079d"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/profile_screen.dart": {
+    "mtime": 1789555288361.3838,
+    "hash": "cd38230ebbada5393ebb215cbff71719"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/quran_reader_screen.dart": {
+    "mtime": 1789451296920.9758,
+    "hash": "397af4ab84435a221dad335e1d168b95"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/quran_screen.dart": {
+    "mtime": 1789427705320.6143,
+    "hash": "7ee0ce3d9c34fd1ed35f1f9565dbfa75"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/register_screen.dart": {
+    "mtime": 1789426486237.1028,
+    "hash": "b7d0f24fe1dcf9527c173f3483621ac6"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/shell_screen.dart": {
+    "mtime": 1789514285062.3733,
+    "hash": "1ad78636517def2cd8efc5e29701dc45"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/tanya_screen.dart": {
+    "mtime": 1789428845351.2842,
+    "hash": "c6f06ee2c8d8b492529b68b724442964"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/tanya_thread_screen.dart": {
+    "mtime": 1789428691283.0154,
+    "hash": "f9ae9e6061219b83a6a7bb3e7a848a7d"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/visit_chat_screen.dart": {
+    "mtime": 1789447493780.8389,
+    "hash": "388b1897468092b64e0137ec4bda6b8d"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/visit_pick_ustadz_screen.dart": {
+    "mtime": 1789553507838.6685,
+    "hash": "e9507fa0c3a30d6c369923fc3f1718f1"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/visit_screen.dart": {
+    "mtime": 1789555845186.1692,
+    "hash": "e407b97a72cab3b2eca54d92d7479323"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/visit_status_screen.dart": {
+    "mtime": 1789553607007.0583,
+    "hash": "774ec84b11bb11ee231020293c8693ca"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/services/deeplink.dart": {
+    "mtime": 1789553657354.1501,
+    "hash": "3e0a04daac4a16eef37cf2a89f25214d"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/test/widget_test.dart": {
+    "mtime": 1789426486237.1028,
+    "hash": "066662be893b462de0ee73e276917b6a"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/android/app/build.gradle.kts": {
+    "mtime": 1789431532546.334,
+    "hash": "70f728e9e24932b3dc1d2b72c7c19813"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/android/app/src/main/kotlin/com/mq/mq_ustadz/MainActivity.kt": {
+    "mtime": 1789426227424.8164,
+    "hash": "c92569f0a31c85627e4c6f9773af2790"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/android/build.gradle.kts": {
+    "mtime": 1789426227427.9397,
+    "hash": "f11f360aed44d4f6871b398346af14f0"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/android/settings.gradle.kts": {
+    "mtime": 1789426227461.342,
+    "hash": "094e3cafe85d4dbf756dfe0bd754c6cb"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/main.dart": {
+    "mtime": 1789526658972.4773,
+    "hash": "a58d1bbb679bb88a3c53d8883c31a484"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/home_screen.dart": {
+    "mtime": 1789514629363.8992,
+    "hash": "26bb44512a1109a7023c8bf5c68ef086"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/khatmil_ustadz_screen.dart": {
+    "mtime": 1789514595367.4258,
+    "hash": "dd88f2a2182d637a6468dc6f87d310ce"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/login_screen.dart": {
+    "mtime": 1789524594573.169,
+    "hash": "66c87ca4741e0fc488141070d46eb92d"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/profile_screen.dart": {
+    "mtime": 1789553766801.6128,
+    "hash": "85e8ed2ae5d4e392bb1f89e63d4e430b"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/setoran_review_screen.dart": {
+    "mtime": 1789431055215.6348,
+    "hash": "fb32811b2ad43fee51701091d4192f1a"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/setoran_screen.dart": {
+    "mtime": 1789431025932.4949,
+    "hash": "42c3d4625c2aa3b2c2f003d2af56ba20"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/shell_screen.dart": {
+    "mtime": 1789514776300.4119,
+    "hash": "d17ae7dc42c4c5556b763af60442f5ea"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/tanya_screen.dart": {
+    "mtime": 1789431068274.5215,
+    "hash": "d09b69ce5e6fb8a3670eb642a5a34d3e"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/tanya_thread_screen.dart": {
+    "mtime": 1789431095827.6707,
+    "hash": "9154bf93db2d1b9bf8fd2d4ec5198073"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/visit_chat_screen.dart": {
+    "mtime": 1789448877156.1365,
+    "hash": "3eef5faa8597a47695e090dc6d1ccd02"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/visit_incoming_screen.dart": {
+    "mtime": 1789553708911.8894,
+    "hash": "826a86736317ec5a8b32a1a964dd8d57"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/visit_request_screen.dart": {
+    "mtime": 1789553725773.5515,
+    "hash": "0867d51f9517e455bd6c212975b84c68"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/visit_settings_screen.dart": {
+    "mtime": 1789553687200.3777,
+    "hash": "8577f57ca66a4e939cd49192ab6bce3d"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/test/widget_test.dart": {
+    "mtime": 1789431160961.4744,
+    "hash": "ecdcb0e2d5c460f9d0264791c39aa3f3"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/mq_shared.dart": {
+    "mtime": 1789524528748.2937,
+    "hash": "5338d2cee56f570638e7f2cca86fca31"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/src/api/mq_api.dart": {
+    "mtime": 1789553469186.7524,
+    "hash": "0d2e622a8e13bc1036460de13c2b384a"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/src/session/session_store.dart": {
+    "mtime": 1789524502177.061,
+    "hash": "b2469cba9e69acabd6a6a478d5b1dd63"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/src/theme/app_theme.dart": {
+    "mtime": 1789426276468.7297,
+    "hash": "51b3924a30595e526e21e25bee5c4e7a"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/src/widgets/common.dart": {
+    "mtime": 1789447641083.3706,
+    "hash": "82ab0bcbb654bab401a582860efd0d68"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/src/widgets/connection_error.dart": {
+    "mtime": 1789524515219.6572,
+    "hash": "ae7f8f75c261bcf5dde46fc6cc35b4da"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/src/widgets/connectivity.dart": {
+    "mtime": 1789431646003.2153,
+    "hash": "1c4bc973c0acd930a5a95f33282d514e"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/README.md": {
+    "mtime": 1789426220619.67,
+    "hash": "313310084708c5f45448d22165565529"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/analysis_options.yaml": {
+    "mtime": 1789426220559.8518,
+    "hash": "66d03d7647c8e438164feaf5b922d44a"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/pubspec.yaml": {
+    "mtime": 1789447446358.6145,
+    "hash": "4f78925cd59325cf9f4c2a0336fb7d93"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/README.md": {
+    "mtime": 1789426227470.388,
+    "hash": "b800f7dddfac12242a427cbf815ee228"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/analysis_options.yaml": {
+    "mtime": 1789426227416.5894,
+    "hash": "66d03d7647c8e438164feaf5b922d44a"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/pubspec.yaml": {
+    "mtime": 1789448892389.9346,
+    "hash": "4fc6eef142f271877dcfe1f3fd1e8ef6"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/pubspec.yaml": {
+    "mtime": 1789426315695.0977,
+    "hash": "c243b429094aeae9f931fdc06c9f8626"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/android/app/src/main/res/mipmap-hdpi/ic_launcher.png": {
+    "mtime": 1767871495723.8525,
+    "hash": "13e9c72ec37fac220397aa819fa1ef2d"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/android/app/src/main/res/mipmap-mdpi/ic_launcher.png": {
+    "mtime": 1767871495732.2136,
+    "hash": "6270344430679711b81476e29878caa7"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png": {
+    "mtime": 1767871495733.9807,
+    "hash": "a0a8db5985280b3679d99a820ae2db79"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png": {
+    "mtime": 1767871495733.9807,
+    "hash": "afe1b655b9f32da22f9a4301bb8e6ba8"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png": {
+    "mtime": 1767871495733.9807,
+    "hash": "57838d52c318faff743130c3fcfae0c6"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/android/app/src/main/res/mipmap-hdpi/ic_launcher.png": {
+    "mtime": 1767871495723.8525,
+    "hash": "13e9c72ec37fac220397aa819fa1ef2d"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/android/app/src/main/res/mipmap-mdpi/ic_launcher.png": {
+    "mtime": 1767871495732.2136,
+    "hash": "6270344430679711b81476e29878caa7"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png": {
+    "mtime": 1767871495733.9807,
+    "hash": "a0a8db5985280b3679d99a820ae2db79"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png": {
+    "mtime": 1767871495733.9807,
+    "hash": "afe1b655b9f32da22f9a4301bb8e6ba8"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png": {
+    "mtime": 1767871495733.9807,
+    "hash": "57838d52c318faff743130c3fcfae0c6"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/visit_schedule_screen.dart": {
+    "mtime": 1789553804489.6492,
+    "hash": "4107610dcb10d7106b36634d3b595ad5"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/wallet_screen.dart": {
+    "mtime": 1789553635967.9043,
+    "hash": "3a94a76f874a184d2eb975f9e3b544e0"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/ustadz_wallet_screen.dart": {
+    "mtime": 1789553745858.7202,
+    "hash": "7ed5b9de02216e2342be14606d314c20"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/.graphify/GRAPH_REPORT.md": {
+    "mtime": 1789555861997.781,
+    "hash": "807b09619a234d88cd764bb14a6497ca"
+  }
+}

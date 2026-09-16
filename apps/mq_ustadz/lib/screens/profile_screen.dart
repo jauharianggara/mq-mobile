@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
 import '../main.dart';
 import 'login_screen.dart';
+import 'ustadz_wallet_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -16,6 +17,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _stats;
   List<dynamic>? _specializations;
   List<dynamic>? _categories;
+  int _walletBalance = -1; // -1 = belum termuat
   bool _loading = true;
 
   @override
@@ -29,6 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         api.get('/ustadz/me/stats'),
         api.get('/me/ustadz/specializations'),
         api.get('/question-categories').catchError((_) => null),
+        api.walletBalance().catchError((_) => -1),
       ]);
       setState(() {
         _me = results[0];
@@ -36,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _stats = results[2];
         _specializations = results[3] as List? ?? [];
         _categories = results[4] as List? ?? [];
+        _walletBalance = results[5] as int;
         _loading = false;
       });
     } catch (_) { setState(() => _loading = false); }
@@ -182,6 +186,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 const SizedBox(height: 20),
+
+                // Saldo penghasilan kunjungan
+                Card(
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.account_balance_wallet_outlined, color: AppColors.primary),
+                    ),
+                    title: const Text('Saldo Penghasilan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    subtitle: _walletBalance < 0
+                        ? null
+                        : Text('Rp ${_walletBalance.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => '.')}',
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primary)),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    onTap: () async {
+                      await Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const UstadzWalletScreen()));
+                      _load();
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
 
                 // Availability
                 Card(

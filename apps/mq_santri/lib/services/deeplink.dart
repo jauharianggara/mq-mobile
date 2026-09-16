@@ -5,6 +5,7 @@ import '../main.dart';
 import '../screens/khatmil_detail_screen.dart';
 import '../screens/khatmil_screen.dart';
 import '../screens/khatmil_reader_screen.dart';
+import '../screens/wallet_screen.dart';
 
 /// Deeplink router (plan F6).
 /// Format: `khatmil:assignment:{id}` → langsung buka Reader (auto-resume);
@@ -56,6 +57,13 @@ Future<void> handleDeeplink(BuildContext context, String? deeplink) async {
       context,
       MaterialPageRoute(builder: (_) => KhatmilDetailScreen(campaignId: int.parse(c.group(1)!))),
     );
+    return;
+  }
+
+  // wallet (penyesuaian saldo dari admin) → halaman Deposit
+  if (deeplink == 'wallet') {
+    if (!context.mounted) return;
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen()));
     return;
   }
 

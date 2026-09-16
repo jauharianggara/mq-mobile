@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
-import 'package:uuid/uuid.dart';
 
 import '../main.dart';
-import 'visit_status_screen.dart';
+import 'visit_schedule_screen.dart';
 
-/// Daftar ustadz terdekat (radius global admin) — santri pilih sendiri (keputusan user #3).
-/// Tap kartu = halaman profil penuh (bukan popup). Response TIDAK berisi koordinat ustadz.
+/// Daftar ustadz terdekat (radius global admin) — santri pilih sendiri.
+/// Tap kartu = halaman profil penuh (bukan popup). Response TANPA koordinat ustadz.
 class VisitPickUstadzScreen extends StatefulWidget {
-  final int serviceTypeId;
-  final DateTime schedule;
   final double lat;
   final double lng;
   final int accuracyM;
@@ -18,8 +15,6 @@ class VisitPickUstadzScreen extends StatefulWidget {
 
   const VisitPickUstadzScreen({
     super.key,
-    required this.serviceTypeId,
-    required this.schedule,
     required this.lat,
     required this.lng,
     required this.accuracyM,
@@ -48,62 +43,18 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
       _error = null;
     });
     try {
-      final r = await api.visitNearby(widget.lat, widget.lng, serviceTypeId: widget.serviceTypeId);
+      final r = await api.visitNearby(widget.lat, widget.lng);
       if (!mounted) return;
       setState(() {
         _ustadz = r;
         _loading = false;
       });
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() {
         _error = 'Tidak bisa mencari ustadz sekarang.';
         _loading = false;
       });
-    }
-  }
-
-  String _isoSchedule() {
-    final u = widget.schedule.toUtc();
-    return '${u.year.toString().padLeft(4, '0')}-${u.month.toString().padLeft(2, '0')}-${u.day.toString().padLeft(2, '0')}T'
-        '${u.hour.toString().padLeft(2, '0')}:${u.minute.toString().padLeft(2, '0')}:00Z';
-  }
-
-  int _tarifOf(Map<String, dynamic> u) {
-    final tarif = (u['services'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>()
-        .where((s) => s['service_type_id'] == widget.serviceTypeId)
-        .toList();
-    return tarif.isEmpty ? 0 : (tarif.first['price_amount'] as num?)?.toInt() ?? 0;
-  }
-
-  Future<void> _book(Map<String, dynamic> u) async {
-    setState(() => _loading = true);
-    try {
-      final d = await api.visitCreate(
-        ustadzId: u['ustadz_id'] as int,
-        serviceTypeId: widget.serviceTypeId,
-        scheduledAt: _isoSchedule(),
-        lat: widget.lat,
-        lng: widget.lng,
-        accuracyM: widget.accuracyM,
-        addressLabel: widget.addressLabel,
-        note: widget.note,
-        idempotencyKey: const Uuid().v4(),
-      );
-      if (!mounted) return;
-      final visitId = d?['visit']?['id'] as int?;
-      final invoiceUrl = d?['invoice_url'] as String?;
-      if (visitId == null) throw 'gagal';
-      // tutup halaman profil + daftar ustadz, langsung ke status screen (bayar di sana)
-      Navigator.of(context).pop(); // profil ustadz
-      Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => VisitStatusScreen(visitId: visitId, initialInvoiceUrl: invoiceUrl)));
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _loading = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Gagal membuat pesanan — coba lagi')));
     }
   }
 
@@ -122,7 +73,7 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
                         icon: Icons.search_off,
                         title: 'Tidak ada ustadz di sekitar',
                         subtitle:
-                            'Ustadz aktif & lokasinya segar dalam radius layanan belum tersedia — coba lagi nanti.',
+                            'Ustadz yang menerima pesanan & lokasinya segar dalam radius layanan belum tersedia — coba lagi nanti.',
                       ),
                     ])
                   : RefreshIndicator(
@@ -133,39 +84,36 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
                         separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (context, i) {
                           final u = _ustadz[i] as Map<String, dynamic>;
-                          final price = _tarifOf(u);
+                          final price = (u['price_per_hour'] as num?)?.toInt() ?? 0;
                           final count = (u['rating_count'] as num?)?.toInt() ?? 0;
                           final avg = u['rating_avg'];
                           return Card(
                             margin: EdgeInsets.zero,
                             child: ListTile(
-                              onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => UstadzProfilePage(
-                                      u: u,
-                                      serviceTypeId: widget.serviceTypeId,
-                                      onBook: () => _book(u),
-                                    ),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => UstadzProfilePage(
+                                    u: u,
+                                    lat: widget.lat,
+                                    lng: widget.lng,
+                                    accuracyM: widget.accuracyM,
+                                    addressLabel: widget.addressLabel,
+                                    note: widget.note,
                                   ),
-                                );
-                                if (mounted) setState(() {}); // refresh list state
-                              },
+                                ),
+                              ),
                               leading: CircleAvatar(
-                                child: Text(
-                                    (u['full_name'] as String? ?? 'U')[0].toUpperCase()),
+                                child: Text((u['full_name'] as String? ?? 'U')[0].toUpperCase()),
                               ),
                               title: Text(u['full_name'] as String? ?? 'Ustadz',
                                   style: const TextStyle(fontWeight: FontWeight.w600)),
                               subtitle: Text(
-                                  '${(u['distance_km'] as num?)?.toStringAsFixed(1)} km • Rp ${_rp(price)}'),
+                                  '${(u['distance_km'] as num?)?.toStringAsFixed(1)} km • Rp ${_rp(price)}/jam'),
                               trailing: avg == null || count == 0
                                   ? const Text('Baru',
                                       style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey))
+                                          fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey))
                                   : Text('★${(avg as num).toStringAsFixed(1)}',
                                       style: const TextStyle(
                                           fontSize: 13,
@@ -182,17 +130,23 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
   String _rp(int n) => n.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => '.');
 }
 
-/// Halaman profil ustadz — pengganti bottom-sheet (konten padat butuh ruang penuh).
+/// Halaman profil ustadz — foto, rating, tarif/jam, review santri lain, tombol Buat Jadwal.
 class UstadzProfilePage extends StatefulWidget {
   final Map<String, dynamic> u;
-  final int serviceTypeId;
-  final VoidCallback onBook;
+  final double lat;
+  final double lng;
+  final int accuracyM;
+  final String addressLabel;
+  final String? note;
 
   const UstadzProfilePage({
     super.key,
     required this.u,
-    required this.serviceTypeId,
-    required this.onBook,
+    required this.lat,
+    required this.lng,
+    required this.accuracyM,
+    required this.addressLabel,
+    this.note,
   });
 
   @override
@@ -202,7 +156,6 @@ class UstadzProfilePage extends StatefulWidget {
 class _UstadzProfilePageState extends State<UstadzProfilePage> {
   List<dynamic> _reviews = [];
   bool _loadingReviews = true;
-  bool _booking = false;
 
   @override
   void initState() {
@@ -224,46 +177,33 @@ class _UstadzProfilePageState extends State<UstadzProfilePage> {
     }
   }
 
-  int get _price {
-    final tarif = (widget.u['services'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>()
-        .where((s) => s['service_type_id'] == widget.serviceTypeId)
-        .toList();
-    return tarif.isEmpty ? 0 : (tarif.first['price_amount'] as num?)?.toInt() ?? 0;
-  }
-
-  int get _dur {
-    final tarif = (widget.u['services'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>()
-        .where((s) => s['service_type_id'] == widget.serviceTypeId)
-        .toList();
-    return tarif.isEmpty ? 60 : (tarif.first['duration_minutes'] as num?)?.toInt() ?? 60;
-  }
-
-  Future<void> _book() async {
-    setState(() => _booking = true);
-    widget.onBook();
-  }
-
   @override
   Widget build(BuildContext context) {
     final u = widget.u;
     final count = (u['rating_count'] as num?)?.toInt() ?? 0;
     final avg = u['rating_avg'];
+    final price = (u['price_per_hour'] as num?)?.toInt() ?? 0;
     return Scaffold(
       appBar: AppBar(title: const Text('Profil Ustadz')),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: FilledButton.icon(
-            onPressed: _booking ? null : _book,
-            icon: _booking
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Icon(Icons.request_quote_outlined),
-            label: Text(_booking ? 'Memproses…' : 'Pesan & Bayar Rp ${_rp(_price)}'),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => VisitScheduleScreen(
+                  u: u,
+                  lat: widget.lat,
+                  lng: widget.lng,
+                  accuracyM: widget.accuracyM,
+                  addressLabel: widget.addressLabel,
+                  note: widget.note,
+                ),
+              ),
+            ),
+            icon: const Icon(Icons.event_available_outlined),
+            label: const Text('Buat Jadwal'),
           ),
         ),
       ),
@@ -305,9 +245,8 @@ class _UstadzProfilePageState extends State<UstadzProfilePage> {
             margin: EdgeInsets.zero,
             child: ListTile(
               leading: const Icon(Icons.sell_outlined),
-              title: const Text('Tarif layanan yang dipilih',
-                  style: TextStyle(fontSize: 13, color: Colors.grey)),
-              subtitle: Text('Rp ${_rp(_price)} • $_dur menit',
+              title: const Text('Tarif per jam', style: TextStyle(fontSize: 13, color: Colors.grey)),
+              subtitle: Text('Rp ${_rp(price)} / jam',
                   style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
             ),
           ),

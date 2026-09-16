@@ -216,20 +216,24 @@ class MqApi {
   Future<dynamic> ustadzHome() => get('/ustadz/me/home');
   Future<dynamic> appVersion(String appId) => get('/app/version', query: {'app_id': appId});
 
-  // ============ visits (Pesan Ustadz — Bagian V) ============
-  Future<List<dynamic>> visitServices() => getList('/visits/services');
+  // ============ visits v2 (Panggil Ustadz — ketersediaan + deposit) ============
 
-  Future<List<dynamic>> visitNearby(double lat, double lng, {int? serviceTypeId}) =>
-      getList('/visits/ustadz/nearby', query: {
-        'lat': lat,
-        'lng': lng,
-        if (serviceTypeId != null) 'service_type_id': serviceTypeId,
-      });
+  /// Ustadz sekitar (radius global admin). TANPA koordinat ustadz — jarak & tarif/jam saja.
+  Future<List<dynamic>> visitNearby(double lat, double lng) =>
+      getList('/visits/ustadz/nearby', query: {'lat': lat, 'lng': lng});
+
+  /// Jam mulai tersedia ("HH:MM" WIB) utk tanggal + durasi tertentu — server-authoritative.
+  Future<List<String>> visitSlots({required int ustadzId, required String date, required int hours}) async {
+    final d = await get('/visits/slots', query: {'ustadz_id': ustadzId, 'date': date, 'hours': hours});
+    if (d is Map) return ((d['slots'] as List?) ?? []).cast<String>();
+    return const [];
+  }
 
   Future<Map<String, dynamic>?> visitCreate({
     required int ustadzId,
-    required int serviceTypeId,
-    required String scheduledAt,
+    required String date, // YYYY-MM-DD (WIB)
+    required String startTime, // HH:MM (WIB) — wajib dari hasil visitSlots
+    required int durationHours,
     required double lat,
     required double lng,
     int? accuracyM,
@@ -241,8 +245,9 @@ class MqApi {
           idempotencyKey: idempotencyKey,
           data: {
             'ustadz_id': ustadzId,
-            'service_type_id': serviceTypeId,
-            'scheduled_at': scheduledAt,
+            'date': date,
+            'start_time': startTime,
+            'duration_hours': durationHours,
             'lat': lat,
             'lng': lng,
             if (accuracyM != null) 'accuracy_m': accuracyM,
@@ -255,6 +260,10 @@ class MqApi {
 
   Future<dynamic> visitDetail(int id) => get('/visits/$id');
   Future<Map<String, dynamic>?> visitPay(int id) => post('/visits/$id/pay');
+
+  /// Bayar pakai deposit (saldo) — saldo kurang → 422.
+  Future<Map<String, dynamic>?> visitPayDeposit(int id) => post('/visits/$id/pay-deposit');
+
   Future<Map<String, dynamic>?> visitCancel(int id) => post('/visits/$id/cancel');
 
   Future<dynamic> visitReviewStatus(int id) => get('/visits/$id/review');
@@ -280,6 +289,36 @@ class MqApi {
         if (accuracyM != null) 'accuracy_m': accuracyM,
       });
 
+  // ============ wallet (deposit santri & penghasilan ustadz) ============
+
+  Future<int> walletBalance() async {
+    final d = await get('/wallet');
+    return (d is Map && d['balance'] is num) ? (d['balance'] as num).toInt() : 0;
+  }
+
+  /// Top-up deposit → invoice Xendit {payment_id, invoice_url}.
+  Future<Map<String, dynamic>?> walletTopup(int amount) =>
+      post('/wallet/topup', data: {'amount': amount});
+
+  Future<({List<dynamic> items, String? nextCursor, bool hasMore})> walletTransactions({int? cursor}) async {
+    final d = await get('/wallet/transactions', query: {
+      if (cursor != null) 'cursor': cursor,
+      'limit': 50,
+    });
+    final m = d as Map<String, dynamic>?;
+    final meta = m?['meta']?['pagination'];
+    return (
+      items: (m?['items'] as List<dynamic>? ?? []),
+      nextCursor: meta?['next_cursor'] as String?,
+      hasMore: (meta?['has_more'] as bool?) ?? false,
+    );
+  }
+
+  /// Penyesuaian saldo dari admin (menunggu ACC — dua langkah).
+  Future<List<dynamic>> myWalletAdjustments() => getList('/me/wallet-adjustments');
+  Future<Map<String, dynamic>?> acceptWalletAdjustment(int id) => post('/me/wallet-adjustments/$id/accept');
+  Future<Map<String, dynamic>?> rejectWalletAdjustment(int id) => post('/me/wallet-adjustments/$id/reject');
+
   // ---- ustadz khatmil monitoring & penugasan (v2) ----
   Future<dynamic> ustadzKhatmil() => get('/ustadz/khatmil');
   Future<int> ustadzKhatmilPendingCount() async {
@@ -293,40 +332,42 @@ class MqApi {
 
   // ---- ustadz side ----
   Future<dynamic> ustadzVisitSettings() => get('/ustadz/visits/settings');
-  Future<Map<String, dynamic>?> ustadzPutVisitSettings({required bool isAccepting, required int maxActiveVisits}) =>
+  Future<Map<String, dynamic>?> ustadzPutVisitSettings({
+    required bool isAccepting,
+    required int maxActiveVisits,
+    required int pricePerHour,
+  }) =>
       put('/ustadz/visits/settings', data: {
         'is_accepting': isAccepting,
         'max_active_visits': maxActiveVisits,
+        'price_per_hour': pricePerHour,
       });
 
-  Future<List<dynamic>> ustadzVisitServices() async =>
-      (await getPage('/ustadz/visit/services', query: {'limit': 50})).items;
-
-  Future<Map<String, dynamic>?> ustadzUpsertVisitService({
-    required int serviceTypeId,
-    required int priceAmount,
-    required int durationMinutes,
-    String? note,
-  }) =>
-      post('/ustadz/visit/services', data: {
-        'service_type_id': serviceTypeId,
-        'price_amount': priceAmount,
-        'duration_minutes': durationMinutes,
-        if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
-      });
-
-  Future<void> ustadzDeleteVisitService(int serviceTypeId) async =>
-      dio.delete('/ustadz/visit/services/$serviceTypeId');
+  // Ketersediaan mingguan + tanggal libur (auto-save per aksi, berlaku segera)
+  Future<dynamic> ustadzVisitAvailability() => get('/ustadz/visit/availability');
+  Future<Map<String, dynamic>?> ustadzAddAvailabilitySlot(
+          {required int weekday, required int startMinute, required int endMinute}) =>
+      post('/ustadz/visit/availability/slots',
+          data: {'weekday': weekday, 'start_minute': startMinute, 'end_minute': endMinute});
+  Future<void> ustadzDeleteAvailabilitySlot(int id) async {
+    await dio.delete('/ustadz/visit/availability/slots/$id');
+  }
+  Future<Map<String, dynamic>?> ustadzAddBlackout(String date, {String? note}) =>
+      post('/ustadz/visit/availability/blackouts',
+          data: {'off_date': date, if (note != null && note.trim().isNotEmpty) 'note': note.trim()});
+  Future<void> ustadzDeleteBlackout(String date) async {
+    await dio.delete('/ustadz/visit/availability/blackouts/$date');
+  }
 
   Future<dynamic> ustadzMyVisits() => get('/ustadz/visits');
-  Future<List<dynamic>> ustadzRequesterReviews(int visitId) async =>
-      (await getPage('/ustadz/visits/$visitId/requester-reviews', query: {'limit': 20})).items;
   Future<Map<String, dynamic>?> ustadzVisitConfirm(int id) => post('/ustadz/visits/$id/confirm');
   Future<Map<String, dynamic>?> ustadzVisitDecline(int id, String reason) =>
       post('/ustadz/visits/$id/decline', data: {'reason': reason});
   Future<Map<String, dynamic>?> ustadzVisitComplete(int id) => post('/ustadz/visits/$id/complete');
+
+  /// Review ustadz→santri pakai endpoint generik /visits/{id}/review (ACL: peserta).
   Future<Map<String, dynamic>?> ustadzVisitReview(int id, {required int rating, String? comment}) =>
-      post('/ustadz/visits/$id/review', data: {
+      post('/visits/$id/review', data: {
         'rating': rating,
         if (comment != null && comment.trim().isNotEmpty) 'comment': comment.trim(),
       });
