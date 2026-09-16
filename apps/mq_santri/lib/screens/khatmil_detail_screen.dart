@@ -59,7 +59,7 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
     try {
       await api.post('/khatmil/campaigns/${widget.campaignId}/juz/claim',
         data: {'juz': juz});
-      _showSnack('Juz $juz sekarang milik Anda — satu santri satu juz', success: true);
+      _showSnack('Juz $juz sekarang milik Anda', success: true);
       _load();
     } catch (e) {
       _showSnack(apiErrorMessage(e, 'Gagal mengambil juz'));
@@ -220,12 +220,6 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
                         )
                       else ...[
                         ...(_myAssignments ?? []).cast<Map<dynamic, dynamic>>().map<Widget>(_myJuzCard),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Tap juz kosong di peta untuk mengambilnya — satu santri satu juz',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                        ),
                       ],
                       const SizedBox(height: 16),
 
