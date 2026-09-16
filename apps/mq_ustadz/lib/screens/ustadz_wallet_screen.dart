@@ -204,7 +204,7 @@ class _UstadzWalletScreenState extends State<UstadzWalletScreen> {
                         'PAYOUT': 'Penarikan dana',
                         'ADJUST': 'Penyesuaian saldo',
                       };
-                      const credit = {'EARNING', 'REFUND', 'TOPUP'};
+                      const credit = {'EARNING', 'REFUND', 'TOPUP', 'ADJUST'}; // ADJUST umumnya penambahan (koreksi admin dua-langkah)
                       final isCredit = credit.contains(type);
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),

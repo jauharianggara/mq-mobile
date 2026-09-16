@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:mq_shared/mq_shared.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,8 +27,8 @@ class _KhatmilReaderScreenState extends State<KhatmilReaderScreen> {
   String? _error;
   bool _showTranslation = false;
 
-  final _scrollCtrl = ScrollController();
-  final List<GlobalKey> _keys = [];
+  final _itemScrollCtrl = ItemScrollController();
+  final _itemPositions = ItemPositionsListener.create();
   Timer? _saveDebounce;
   Timer? _scrollIdle;
   bool _saving = false;
@@ -43,7 +44,7 @@ class _KhatmilReaderScreenState extends State<KhatmilReaderScreen> {
   void initState() {
     super.initState();
     _load();
-    _scrollCtrl.addListener(_onScroll);
+    _itemPositions.itemPositions.addListener(_onPositions);
   }
 
   Future<void> _load() async {
@@ -57,7 +58,7 @@ class _KhatmilReaderScreenState extends State<KhatmilReaderScreen> {
         _ayahs = ayahs;
         _showTranslation = prefs.getBool('reader_show_translation') ?? false;
         _loading = false;
-        _keys..clear()..addAll(List.generate(ayahs.length, (_) => GlobalKey()));
+
       });
       _afterLoad();
     } catch (e) {
@@ -72,7 +73,12 @@ class _KhatmilReaderScreenState extends State<KhatmilReaderScreen> {
       final idx = _ayahs!.indexWhere((a) => a['surah_id'] == cs && a['ayah_number'] == ca);
       if (idx >= 0) {
         _savedIndex = idx;
-        WidgetsBinding.instance.addPostFrameCallback((_) => _scrollTo(idx, alignTop: true));
+        _activeIndex = idx;
+        // langsung lompat ke ayat terakhir dibaca (posisi atas viewport)
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _itemScrollCtrl.jumpTo(index: idx);
+        });
       }
     }
     final ayahs = _ayahs;
@@ -81,19 +87,11 @@ class _KhatmilReaderScreenState extends State<KhatmilReaderScreen> {
     }
   }
 
-  void _scrollTo(int index, {bool alignTop = false}) {
-    final ctx = _keys[index].currentContext;
-    if (ctx == null || !ctx.mounted) return;
-    Scrollable.ensureVisible(
-      ctx,
-      duration: const Duration(milliseconds: 400),
-      alignment: alignTop ? 0.0 : 0.3,
-    );
-  }
+
 
   /* ---------------- Scroll tracking ---------------- */
 
-  void _onScroll() {
+  void _onPositions() {
     // debounce deteksi ayat aktif
     _scrollIdle?.cancel();
     _scrollIdle = Timer(const Duration(milliseconds: 350), _detectActive);
@@ -103,17 +101,14 @@ class _KhatmilReaderScreenState extends State<KhatmilReaderScreen> {
   }
 
   void _detectActive() {
-    if (_keys.isEmpty || !mounted) return;
-    const top = 120.0; // di bawah AppBar
-    int best = _activeIndex;
-    for (int i = 0; i < _keys.length; i++) {
-      final ctx = _keys[i].currentContext;
-      if (ctx == null || !ctx.mounted) continue;
-      final box = ctx.findRenderObject() as RenderBox?;
-      if (box == null || !box.attached) continue;
-      final pos = box.localToGlobal(Offset.zero);
-      if (pos.dy <= top && pos.dy + box.size.height > top) { best = i; break; }
-      if (pos.dy > top) break; // sudah lewat viewport area
+    if (!mounted) return;
+    final positions = _itemPositions.itemPositions.value;
+    if (positions.isEmpty) return;
+    // ayat aktif = item paling bawah yang garis atasnya sudah melewati top viewport
+    int best = 0;
+    for (final p in positions) {
+      final idx = p.index ?? 0;
+      if (p.itemLeadingEdge <= 0.2 && idx > best) best = idx;
     }
     if (best != _activeIndex) setState(() => _activeIndex = best);
   }
@@ -237,8 +232,7 @@ class _KhatmilReaderScreenState extends State<KhatmilReaderScreen> {
   void dispose() {
     _saveDebounce?.cancel();
     _scrollIdle?.cancel();
-    _scrollCtrl.removeListener(_onScroll);
-    _scrollCtrl.dispose();
+
     super.dispose();
   }
 
@@ -306,8 +300,9 @@ class _KhatmilReaderScreenState extends State<KhatmilReaderScreen> {
             ? const Center(child: CircularProgressIndicator())
             : _error != null
                 ? EmptyState(icon: Icons.wifi_off, message: _error!, actionLabel: 'Coba Lagi', onAction: _load)
-                : ListView.builder(
-                    controller: _scrollCtrl,
+                : ScrollablePositionedList.builder(
+                    itemScrollController: _itemScrollCtrl,
+                    itemPositionsListener: _itemPositions,
                     padding: const EdgeInsets.only(bottom: 24),
                     itemCount: _ayahs!.length,
                     itemBuilder: (ctx, i) => _ayahCard(i),
@@ -334,7 +329,6 @@ class _KhatmilReaderScreenState extends State<KhatmilReaderScreen> {
     final alreadyMarked = i <= _savedIndex && _savedIndex >= 0;
 
     return Column(
-      key: _keys[i],
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (isNewSurah)
