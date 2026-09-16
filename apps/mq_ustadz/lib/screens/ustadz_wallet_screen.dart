@@ -57,10 +57,10 @@ class _UstadzWalletScreenState extends State<UstadzWalletScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(accept ? 'Penyesuaian disetujui — saldo diperbarui' : 'Penyesuaian ditolak')));
       _load();
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Gagal memproses penyesuaian')));
+            .showSnackBar(SnackBar(content: Text(apiErrorMessage(e, 'Gagal memproses penyesuaian'))));
       }
     }
   }

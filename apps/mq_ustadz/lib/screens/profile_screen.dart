@@ -198,6 +198,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _jm(int m) =>
       '${(m ~/ 60).toString().padLeft(2, '0')}.${(m % 60).toString().padLeft(2, '0')}';
 
+  /// API mengirim "HH:MM" (string); toleran juga terhadap menit (num).
+  String _fmtJam(dynamic v) {
+    if (v is String) return v.replaceAll(':', '.');
+    return _jm((v as num?)?.toInt() ?? 0);
+  }
+
   /// Ringkasan jadwal aktif untuk subtitle kartu Profil.
   /// 0 slot = peringatan; 1 hari = nama panjang; 2–3 = singkatan;
   /// ≥4 hari seragam & penuh 7 hari = "Setiap hari", selain itu "N hari terbuka".
@@ -208,9 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final m = s as Map<String, dynamic>;
       final d = (m['weekday'] as num?)?.toInt() ?? -1;
       if (d < 0 || d > 6) continue;
-      final sm = (m['start_minute'] as num?)?.toInt() ?? 0;
-      final em = (m['end_minute'] as num?)?.toInt() ?? 0;
-      byDay.putIfAbsent(d, () => []).add('${_jm(sm)}–${_jm(em)}');
+      byDay.putIfAbsent(d, () => []).add('${_fmtJam(m['start'])}–${_fmtJam(m['end'])}');
     }
     if (byDay.isEmpty) return 'Belum diatur — santri belum bisa memesan';
     final days = byDay.keys.toList()..sort();

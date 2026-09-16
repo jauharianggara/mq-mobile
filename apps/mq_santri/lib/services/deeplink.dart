@@ -39,10 +39,10 @@ Future<void> handleDeeplink(BuildContext context, String? deeplink) async {
         MaterialPageRoute(builder: (_) => const KhatmilScreen()),
       );
       return;
-    } catch (_) {
+    } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal membuka juz — coba lagi'), backgroundColor: AppColors.error),
+          SnackBar(content: Text(apiErrorMessage(e, 'Gagal membuka juz — coba lagi')), backgroundColor: AppColors.error),
         );
       }
       return;

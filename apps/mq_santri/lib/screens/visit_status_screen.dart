@@ -166,9 +166,9 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
       }
       setState(() => _showReviewForm = false);
       _load();
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal mengirim penilaian')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(apiErrorMessage(e, 'Gagal mengirim penilaian'))));
       }
     } finally {
       if (mounted) setState(() => _sendingReview = false);

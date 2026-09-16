@@ -53,11 +53,11 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
         _blackouts = (a?['blackouts'] as List? ?? []);
         _loading = false;
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Gagal memuat pengaturan')));
+          .showSnackBar(SnackBar(content: Text(apiErrorMessage(e, 'Gagal memuat pengaturan'))));
     }
   }
 
@@ -76,9 +76,9 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               _accepting ? 'Tersimpan — Anda menerima pesanan' : 'Tersimpan — tidak menerima pesanan')));
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menyimpan')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(apiErrorMessage(e, 'Gagal menyimpan'))));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -96,11 +96,11 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
           content: Text(v
               ? 'Tersimpan — Anda menerima pesanan baru'
               : 'Tersimpan — santri tidak bisa memesan saat ini')));
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() => _accepting = !v);
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Gagal menyimpan')));
+          .showSnackBar(SnackBar(content: Text(apiErrorMessage(e, 'Gagal menyimpan'))));
     }
   }
 
@@ -112,6 +112,13 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
       .toList();
 
   String _mm(int m) => '${(m ~/ 60).toString().padLeft(2, '0')}:${(m % 60).toString().padLeft(2, '0')}';
+
+  /// API mengirim "HH:MM" (string); toleran juga terhadap menit (num).
+  String _fmtJam(dynamic v) {
+    if (v is String) return v;
+    final m = (v as num?)?.toInt() ?? 0;
+    return _mm(m);
+  }
 
   Future<void> _addSlot(int weekday) async {
     final start = await showTimePicker(
@@ -145,10 +152,10 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
     try {
       await api.ustadzAddAvailabilitySlot(weekday: weekday, startMinute: sm, endMinute: em);
       _load();
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Gagal menambah (rentang tumpang tindih?)')));
+            SnackBar(content: Text(apiErrorMessage(e, 'Gagal menambah (rentang tumpang tindih?)'))));
       }
     }
   }
@@ -157,9 +164,9 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
     try {
       await api.ustadzDeleteAvailabilitySlot(id);
       _load();
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menghapus')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(apiErrorMessage(e, 'Gagal menghapus'))));
       }
     }
   }
@@ -184,9 +191,9 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Tanggal libur ditambahkan')));
       _load();
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menambah libur')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(apiErrorMessage(e, 'Gagal menambah libur'))));
       }
     }
   }
@@ -195,9 +202,9 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
     try {
       await api.ustadzDeleteBlackout(date);
       _load();
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menghapus')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(apiErrorMessage(e, 'Gagal menghapus'))));
       }
     }
   }
@@ -397,8 +404,8 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
               )
             else
               ...rows.map((s) {
-                final start = (s['start_minute'] as num?)?.toInt() ?? 0;
-                final end = (s['end_minute'] as num?)?.toInt() ?? 0;
+                final start = _fmtJam(s['start']);
+                final end = _fmtJam(s['end']);
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Row(
@@ -406,7 +413,7 @@ class _VisitSettingsScreenState extends State<VisitSettingsScreen> {
                       const Icon(Icons.schedule, size: 16, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text('${_mm(start)} – ${_mm(end)}',
+                        child: Text('$start – $end',
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                       ),
                       IconButton(
