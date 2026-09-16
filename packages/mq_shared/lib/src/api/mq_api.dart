@@ -1,9 +1,41 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+/// true kalau error menandakan server TIDAK terjangkau (bukan sesi invalid).
+/// Dipakai splash/app utk membedakan "layar Coba Lagi" vs "kembali ke Login".
+bool isUnreachableError(Object e) {
+  if (e is DioException) {
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.connectionError:
+        return true;
+      default:
+        break;
+    }
+    final code = e.response?.statusCode ?? 0;
+    if (code == 401 || code == 403) return false; // sesi invalid / ditolak
+    return true; // 5xx / gateway / unknown -> server bermasalah
+  }
+  return true; // non-dio -> konservatif: jangan paksa logout
+}
+
 /// MQ API Client — dio-based dengan auth interceptor, refresh, force-update headers.
 /// Semua request relatif ke /api/v1 (proxy mq-admin atau langsung mq-api).
 class MqApi {
+  /// Dipanggil SETIAP KALI token berubah (login, refresh rotasi, clear).
+  /// App mendaftarkan handler yang menulis/menghapus penyimpanan permanen —
+  /// satu jalur tunggal, tidak boleh ada penulisan prefs manual di screen.
+  void Function(String? access, String? refresh)? onTokensChanged;
+
+  /// Dipanggil SEKALI saat sesi benar-benar mati (refresh gagal final setelah login).
+  /// App: hapus penyimpanan -> kembali ke layar Login + snackbar.
+  void Function()? onSessionExpired;
+  bool _expiredNotified = false;
+
+  Future<bool>? _refreshing; // single-flight: request paralel berbagi 1 refresh
+
   static const prodBase = 'https://mq-api.jagodigital.online/api/v1';
   /// Hanya aktif jika di-explicit lewat --dart-define=MQ_DEV_BASE=http://10.0.2.2:8290/api/v1
   /// (utk developer uji lokal di EMULATOR). Perangkat fisik & rilis selalu prod.
@@ -23,11 +55,14 @@ class MqApi {
   setTokens(String? access, String? refresh) {
     _accessToken = access;
     _refreshToken = refresh;
+    if (access != null && refresh != null) _expiredNotified = false;
+    onTokensChanged?.call(access, refresh);
   }
 
   clearTokens() {
     _accessToken = null;
     _refreshToken = null;
+    onTokensChanged?.call(null, null);
   }
 
   MqApi() {
@@ -51,19 +86,28 @@ class MqApi {
           handler.next(options);
         },
         onError: (e, handler) async {
-          // 401 → coba refresh → retry
+          // 401 → coba refresh → retry (single-flight anti refresh dobel paralel)
           if (e.response?.statusCode == 401 && _refreshToken != null) {
+            final refreshFuture = _refreshing ??= _doRefresh().whenComplete(() => _refreshing = null);
+            bool refreshed = false;
             try {
-              final refreshed = await _doRefresh();
-              if (refreshed) {
-                final opts = e.requestOptions;
-                opts.headers['Authorization'] = 'Bearer $_accessToken';
-                final resp = await dio.fetch(opts);
-                handler.resolve(resp);
-                return;
-              }
+              refreshed = await refreshFuture;
             } catch (_) {}
-            clearTokens();
+            if (refreshed && _accessToken != null) {
+              final opts = e.requestOptions;
+              opts.headers['Authorization'] = 'Bearer $_accessToken';
+              final resp = await dio.fetch(opts);
+              handler.resolve(resp);
+              return;
+            }
+            // refresh gagal final → sesi mati (kecuali paralel lain sudah berhasil)
+            if (_accessToken == null || _refreshToken == null) {
+              clearTokens();
+              if (!_expiredNotified) {
+                _expiredNotified = true;
+                onSessionExpired?.call();
+              }
+            }
           }
           handler.next(e);
         },
@@ -79,8 +123,8 @@ class MqApi {
         data: {'refresh_token': _refreshToken},
       );
       if (res.statusCode == 200 && res.data['data'] != null) {
-        _accessToken = res.data['data']['access_token'];
-        _refreshToken = res.data['data']['refresh_token'];
+        // lewat setTokens agar callback persist ikut terpanggil (rotasi tersimpan)
+        setTokens(res.data['data']['access_token'], res.data['data']['refresh_token']);
         return true;
       }
     } catch (_) {}
