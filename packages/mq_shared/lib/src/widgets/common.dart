@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 class StatusBadge extends StatelessWidget {
   final String status;
   final double fontSize;
+  /// Label tampil eksplisit (utk status yang sama beda konteks, mis. akun ACTIVE → 'Aktif').
+  final String? label;
 
-  const StatusBadge({super.key, required this.status, this.fontSize = 11});
+  const StatusBadge({super.key, required this.status, this.fontSize = 11, this.label});
 
   Color get _color {
     switch (status.toUpperCase()) {
@@ -49,6 +51,69 @@ class StatusBadge extends StatelessWidget {
     }
   }
 
+  /// Kamus status sistem → bahasa santri (plan 2026-09-17_mq-status-bahasa-santri).
+  /// Satu titik utk semua layar: khatmil, pesanan, saldo, profil, penarikan.
+  static const Map<String, String> _labels = {
+    // khatmil
+    'ACTIVE': 'Sedang Berjalan',
+    'SCHEDULED': 'Terjadwal',
+    'COMPLETED': 'Selesai',
+    'CANCELED': 'Dibatalkan',
+    'CANCELLED': 'Dibatalkan',
+    'ASSIGNED': 'Sudah Diambil',
+    'IN_PROGRESS': 'Sedang Dibaca',
+    'SYSTEM_VERIFIED': 'Selesai Terverifikasi',
+    'KHATAM': 'Khatam',
+    'AKTIF': 'Aktif',
+    // pesanan / kunjungan
+    'REQUESTED': 'Menunggu Pembayaran',
+    'WAITING_CONFIRM': 'Menunggu ACC Ustadz',
+    'CONFIRMED': 'Sudah Dijadwalkan',
+    'DECLINED': 'Ditolak Ustadz',
+    'PAYMENT_EXPIRED': 'Hangus — belum dibayar',
+    'EXPIRED': 'Kadaluarsa',
+    // saldo & penarikan
+    'PENDING': 'Menunggu ACC',
+    'PENDING_ACC': 'Menunggu ACC Anda',
+    'APPROVED': 'Disetujui',
+    'ACCEPTED': 'Disetujui',
+    'TRANSFERRED': 'Sudah Ditransfer',
+    'REJECTED': 'Ditolak',
+    // akun
+    'VERIFIED': 'Terverifikasi',
+    'PENDING_VERIFICATION': 'Belum Verifikasi Email',
+    'SUSPENDED': 'Ditangguhkan',
+    'DELETED': 'Terhapus',
+    // media
+    'READY': 'Siap',
+    'UPLOADING': 'Mengunggah',
+    'FAILED': 'Gagal',
+    // hafalan (layar tersembunyi)
+    'PASSED': 'Lulus',
+    'NEEDS_IMPROVEMENT': 'Perlu Diperbaiki',
+    'REVISION': 'Perlu Perbaikan',
+    // tanya ustadz (layar tersembunyi)
+    'QUEUED': 'Dalam Antrean',
+    'ANSWERED': 'Sudah Dijawab',
+    'PUBLISH_REQUESTED': 'Menunggu Tayang',
+    'PUBLISHED': 'Tayang',
+    'IN_REVIEW': 'Sedang Ditinjau',
+    'DRAFT': 'Draf',
+    'DEAD': 'Gagal Total',
+    'REVIEWED': 'Sudah Ditinjau',
+  };
+
+  /// Label tampil: label eksplisit → kamus → fallback Title Case (bukan UPPER mentah).
+  String get _label {
+    if (label != null && label!.isNotEmpty) return label!;
+    final key = status.trim().toUpperCase();
+    final l = _labels[key];
+    if (l != null) return l;
+    if (key.isEmpty) return key;
+    final s = key.toLowerCase();
+    return s[0].toUpperCase() + s.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -58,7 +123,7 @@ class StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        status,
+        _label,
         style: TextStyle(
           color: _color,
           fontSize: fontSize,

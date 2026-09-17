@@ -65,7 +65,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                 ),
                 const SizedBox(height: 8),
-                Center(child: StatusBadge(status: _user?['status'] ?? 'ACTIVE')),
+                // status akun — konteks akun, bukan campaign: ACTIVE → Aktif
+                Center(child: StatusBadge(
+                  status: _user?['status'] ?? 'ACTIVE',
+                  label: {
+                    'ACTIVE': 'Aktif',
+                    'PENDING_VERIFICATION': 'Belum Verifikasi Email',
+                    'SUSPENDED': 'Ditangguhkan',
+                    'DELETED': 'Terhapus',
+                  }[_user?['status'] as String?],
+                )),
                 const SizedBox(height: 24),
                 _tile(Icons.account_balance_wallet_outlined, 'Deposit', () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen()));
