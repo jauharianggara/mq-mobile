@@ -19,6 +19,7 @@ class VisitStatusScreen extends StatefulWidget {
 
 class _VisitStatusScreenState extends State<VisitStatusScreen> {
   Map<String, dynamic>? _v;
+  Map<String, dynamic>? _review; // status penilaian 2 arah
   bool _loading = true;
   String? _error;
   Timer? _poll;
@@ -58,6 +59,12 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
         _loading = false;
         _error = null;
       });
+      final s = d?['status'];
+      if (s == 'COMPLETED' || s == 'REVIEWED') {
+        api.visitReviewStatus(widget.visitId).then((r) {
+          if (mounted) setState(() => _review = r);
+        }).catchError((_) {});
+      }
       _schedulePoll(d?['status'] as String?);
       // saldo utk tombol bayar deposit (hanya perlu saat REQUESTED)
       if (d?['status'] == 'REQUESTED' && _saldo < 0) {
@@ -195,6 +202,13 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
                       _infoCard(v),
                       const SizedBox(height: 16),
                       ..._actions(v),
+                      if (v?['status'] == 'COMPLETED' || v?['status'] == 'REVIEWED') ...[
+                        const SizedBox(height: 12),
+                        if (_review == null)
+                          const Text('Memuat penilaian…', style: TextStyle(fontSize: 12, color: Colors.grey))
+                        else
+                          _reviewCard(),
+                      ],
                       if (_showReviewForm && v?['status'] == 'COMPLETED') ...[
                         const SizedBox(height: 12),
                         Card(
@@ -248,6 +262,44 @@ class _VisitStatusScreenState extends State<VisitStatusScreen> {
                     ],
                   ),
                 ),
+    );
+  }
+
+  /// Kartu penilaian 2 arah (setelah keduanya memberi → reveal, komentar saling terlihat).
+  Widget _reviewCard() {
+    final r = _review!;
+    final revealed = r['revealed'] == true;
+    String stars(n) => '★' * (n ?? 0) + '☆' * (5 - ((n ?? 0) as int));
+    return Card(
+      margin: EdgeInsets.zero,
+      color: const Color(0xFFC9A227).withValues(alpha: 0.06),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Penilaian', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            const SizedBox(height: 8),
+            if (r['my_rating'] != null) ...[
+              Text('Anda untuk Ustadz:  ${stars(r['my_rating'])}',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              if (r['my_comment'] != null)
+                Text('"${r['my_comment']}"',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey, fontStyle: FontStyle.italic)),
+              const SizedBox(height: 8),
+            ],
+            if (revealed && r['counterpart_rating'] != null) ...[
+              Text('Ustadz untuk Anda:  ${stars(r['counterpart_rating'])}',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF8a6d1a))),
+              if (r['counterpart_comment'] != null)
+                Text('"${r['counterpart_comment']}"',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey, fontStyle: FontStyle.italic)),
+            ] else if (r['my_rating'] != null)
+              const Text('Komentar ustadz terbuka setelah beliau juga memberi penilaian.',
+                  style: TextStyle(fontSize: 11, color: Colors.grey)),
+          ],
+        ),
+      ),
     );
   }
 

@@ -112,6 +112,7 @@ class _VisitIncomingScreenState extends State<VisitIncomingScreen> {
   Widget build(BuildContext context) {
     final incoming = (_data?['incoming'] as List<dynamic>? ?? []);
     final upcoming = (_data?['upcoming'] as List<dynamic>? ?? []);
+    final history = (_data?['history'] as List<dynamic>? ?? []);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Kunjungan'),
@@ -193,8 +194,34 @@ class _VisitIncomingScreenState extends State<VisitIncomingScreen> {
                         )
                       else
                         ...upcoming.map((v) => _upcomingCard(v as Map<String, dynamic>)),
+                        if (history.isNotEmpty) ...[
+                          const SizedBox(height: 20),
+                          Text('Riwayat', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                          const SizedBox(height: 4),
+                          ...history.map((v) => _historyCard(v as Map<String, dynamic>)),
+                        ],
                     ],
                   ),
+      ),
+    );
+  }
+
+  Widget _historyCard(Map<String, dynamic> v) {
+    final r = v['requester'] as Map<String, dynamic>? ?? {};
+    return Card(
+      margin: const EdgeInsets.only(bottom: 6),
+      child: ListTile(
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        onTap: () async {
+          await Navigator.push(context,
+              MaterialPageRoute(builder: (_) => VisitRequestScreen(visitId: v['id'] as int)));
+          _load();
+        },
+        title: Text('${r['full_name'] ?? 'Santri'} • ${v['duration_hours'] ?? '-'} jam',
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        subtitle: Text(_fmt(v['scheduled_at'] as String?), style: const TextStyle(fontSize: 11)),
+        trailing: StatusBadge(status: v['status'] as String? ?? ''),
       ),
     );
   }

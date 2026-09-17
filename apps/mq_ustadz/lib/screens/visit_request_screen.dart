@@ -18,6 +18,7 @@ class VisitRequestScreen extends StatefulWidget {
 
 class _VisitRequestScreenState extends State<VisitRequestScreen> {
   Map<String, dynamic>? _v;
+  Map<String, dynamic>? _review; // status penilaian 2 arah (COMPLETED/REVIEWED)
   bool _loading = true;
   bool _busy = false;
   Timer? _poll;
@@ -49,6 +50,11 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
         _loading = false;
       });
       final s = d?['status'];
+      if (s == 'COMPLETED' || s == 'REVIEWED') {
+        api.visitReviewStatus(widget.visitId).then((r) {
+          if (mounted) setState(() => _review = r);
+        }).catchError((_) {});
+      }
       if (s == 'WAITING_CONFIRM') {
         _poll?.cancel();
         _poll = Timer.periodic(const Duration(seconds: 8), (_) => _load());
@@ -145,7 +151,7 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
   Widget build(BuildContext context) {
     final v = _v;
     return Scaffold(
-      appBar: AppBar(title: const Text('Permintaan Kunjungan')),
+      appBar: AppBar(title: const Text('Permintaan Kunjungan V2')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : v == null
@@ -161,6 +167,13 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
                       if (v['status'] == 'WAITING_CONFIRM') ...[
                         const SizedBox(height: 12),
                         _requesterSection(v),
+                      ],
+                      if (v['status'] == 'COMPLETED' || v['status'] == 'REVIEWED') ...[
+                        const SizedBox(height: 12),
+                        if (_review == null)
+                          const Text('Memuat penilaian…', style: TextStyle(fontSize: 12, color: Colors.grey))
+                        else
+                          _reviewCard(),
                       ],
                       const SizedBox(height: 20),
                       ..._actions(v),
@@ -252,6 +265,44 @@ class _VisitRequestScreenState extends State<VisitRequestScreen> {
                     ],
                   ),
                 ),
+    );
+  }
+
+  /// Kartu penilaian 2 arah (setelah keduanya memberi → reveal, komentar saling terlihat).
+  Widget _reviewCard() {
+    final r = _review!;
+    final revealed = r['revealed'] == true;
+    String stars(n) => '★' * (n ?? 0) + '☆' * (5 - ((n ?? 0) as int));
+    return Card(
+      margin: EdgeInsets.zero,
+      color: const Color(0xFFC9A227).withValues(alpha: 0.06),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Penilaian', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            const SizedBox(height: 8),
+            if (r['my_rating'] != null) ...[
+              Text('Anda untuk Santri:  ${stars(r['my_rating'])}',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              if (r['my_comment'] != null)
+                Text('"${r['my_comment']}"',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey, fontStyle: FontStyle.italic)),
+              const SizedBox(height: 8),
+            ],
+            if (revealed && r['counterpart_rating'] != null) ...[
+              Text('Santri untuk Anda:  ${stars(r['counterpart_rating'])}',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF8a6d1a))),
+              if (r['counterpart_comment'] != null)
+                Text('"${r['counterpart_comment']}"',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey, fontStyle: FontStyle.italic)),
+            ] else if (r['my_rating'] != null)
+              const Text('Komentar santri terbuka setelah ia juga memberi penilaian.',
+                  style: TextStyle(fontSize: 11, color: Colors.grey)),
+          ],
+        ),
+      ),
     );
   }
 
