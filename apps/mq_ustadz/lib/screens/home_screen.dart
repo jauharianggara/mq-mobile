@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 12),
                   _navCard(
                     context,
-                    icon: Icons.two_wheeler,
+                    icon: Icons.auto_stories,
                     title: 'Pesan',
                     subtitle: 'Permintaan kunjungan & jadwal terjadwal',
                     onTap: () => Navigator.push(context,

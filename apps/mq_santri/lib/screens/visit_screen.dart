@@ -179,7 +179,7 @@ class _VisitScreenState extends State<VisitScreen> {
                     ? ListView(children: const [
                         SizedBox(height: 100),
                         EmptyState(
-                          icon: Icons.two_wheeler_outlined,
+                          icon: Icons.auto_stories_outlined,
                           title: 'Belum ada pesanan',
                           subtitle: 'Panggil ustadz terdekat untuk ngaji di rumah —\npilih jadwal dari jam ketersediaannya.',
                         ),
