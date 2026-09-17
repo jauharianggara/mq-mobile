@@ -3,6 +3,7 @@ import 'package:mq_shared/mq_shared.dart';
 import '../main.dart';
 import 'login_screen.dart';
 import 'ustadz_wallet_screen.dart';
+import 'data_ustadz_screen.dart';
 import 'visit_settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -132,6 +133,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 8),
 
+                // Master data ustadz
+                Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.badge_outlined, color: AppColors.primary),
+                    ),
+                    title: const Text('Data Ustadz Saya',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    subtitle: const Text('Pendidikan, pengalaman, rekening',
+                        style: TextStyle(fontSize: 12)),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    onTap: () async {
+                      await Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const DataUstadzScreen()));
+                      _load();
+                    },
+                  ),
+                ),
                 // Saldo penghasilan kunjungan
                 Card(
                   child: ListTile(

@@ -35,6 +35,7 @@ class _PayoutScreenState extends State<PayoutScreen> {
   @override
   void initState() {
     super.initState();
+    _loadSavedBank();
     _load();
   }
 
@@ -108,6 +109,24 @@ class _PayoutScreenState extends State<PayoutScreen> {
   }
 
   @override
+
+  /// Prefill rekening tersimpan (master data) — user masih bisa ubah.
+  Future<void> _loadSavedBank() async {
+    try {
+      final b = await api.ustadzBank();
+      if (!mounted || b == null) return;
+      final bn = (b['bank_name'] as String?) ?? '';
+      final no = (b['bank_account_no'] as String?) ?? '';
+      final an = (b['bank_account_name'] as String?) ?? '';
+      if (bn.isEmpty && no.isEmpty) return;
+      setState(() {
+        if (_banks.contains(bn)) _bank = bn;
+        if (_noCtrl.text.isEmpty && no.isNotEmpty) _noCtrl.text = no;
+        if (_anCtrl.text.isEmpty && an.isNotEmpty) _anCtrl.text = an;
+      });
+    } catch (_) {}
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Tarik Dana')),

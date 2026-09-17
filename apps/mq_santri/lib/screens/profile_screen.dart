@@ -3,6 +3,7 @@ import 'package:mq_shared/mq_shared.dart';
 import '../main.dart';
 import 'login_screen.dart';
 import 'notification_screen.dart';
+import 'data_saya_screen.dart';
 import 'wallet_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -76,6 +77,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   }[_user?['status'] as String?],
                 )),
                 const SizedBox(height: 24),
+                _tile(Icons.badge_outlined, 'Data Saya', () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const DataSayaScreen()));
+                }),
                 _tile(Icons.account_balance_wallet_outlined, 'Deposit', () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen()));
                 }),

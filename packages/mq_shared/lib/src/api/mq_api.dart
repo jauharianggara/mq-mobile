@@ -412,4 +412,29 @@ class MqApi {
         'account_name': accountName.trim(),
         'amount': amount,
       });
+
+  // ============ master data (Data Saya) ============
+
+  /// Profil lengkap pemilik akun (HP, alamat, TTL, dsb).
+  Future<Map<String, dynamic>?> myProfile() async {
+    final d = await get('/me/profile');
+    return d is Map ? Map<String, dynamic>.from(d) : null;
+  }
+  Future<Map<String, dynamic>?> patchMe(Map<String, dynamic> data) => patch('/me', data: data);
+
+  /// Keustadzan: pendidikan & pengalaman mengajar.
+  Future<Map<String, dynamic>?> ustadzDetail() async {
+    final d = await get('/me/ustadz/detail');
+    return d is Map ? Map<String, dynamic>.from(d) : null;
+  }
+  Future<Map<String, dynamic>?> ustadzSaveDetail(Map<String, dynamic> data) async =>
+      await put('/me/ustadz/detail', data: data);
+
+  /// Rekening penarikan tersimpan (dipakai prefill form Tarik Dana).
+  Future<Map<String, dynamic>?> ustadzBank() async {
+    final d = await get('/me/ustadz/bank-account');
+    return d is Map ? Map<String, dynamic>.from(d) : null;
+  }
+  Future<Map<String, dynamic>?> ustadzSaveBank(Map<String, dynamic> data) async =>
+      await put('/me/ustadz/bank-account', data: data);
 }
