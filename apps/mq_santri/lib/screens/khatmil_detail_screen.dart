@@ -54,16 +54,61 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
     }
   }
 
-  /// ATURAN: santri pilih juz sendiri (tap peta); satu santri satu juz.
-  Future<void> _claimJuz(int juz) async {
+  /// ATURAN: santri pilih juz sendiri (tap peta) + pilih kelompok bila >1.
+  Future<void> _claimJuz(int juz, int groupId) async {
     try {
       await api.post('/khatmil/campaigns/${widget.campaignId}/juz/claim',
-        data: {'juz': juz});
-      _showSnack('Juz $juz sekarang milik Anda', success: true);
+        data: {'juz': juz, 'group_id': groupId});
+      _showSnack('Juz $juz sekarang milik Anda di ${_groupName(groupId)}', success: true);
       _load();
     } catch (e) {
       _showSnack(apiErrorMessage(e, 'Gagal mengambil juz'));
     }
+  }
+
+  List<dynamic> get _groups => (_detail?['groups'] as List?) ?? const [];
+
+  String _groupName(int id) {
+    for (final g in _groups) {
+      if (g['id'] == id) return 'Kelompok ${g['group_no']}';
+    }
+    return 'Kelompok';
+  }
+
+  /// Dropdown pilih kelompok (muncul bila campaign punya >1 kelompok).
+  int? _pickedGroup;
+
+  Widget _groupPicker() {
+    final open = _groups
+        .map((g) => {
+              'id': g['id'] as int,
+              'no': g['group_no'] as int,
+              'cnt': g['member_count'] as int,
+              'pembina': (g['pembina'] as String?) ?? 'Ustadz',
+            })
+        .where((g) => (g['cnt'] as int) < 30)
+        .toList();
+    if (_pickedGroup == null && open.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _pickedGroup == null && open.isNotEmpty) {
+          setState(() => _pickedGroup = open.first['id'] as int);
+        }
+      });
+    }
+    return DropdownButtonFormField<int>(
+      initialValue: _pickedGroup,
+      decoration: const InputDecoration(
+          labelText: 'Pilih kelompok', border: OutlineInputBorder()),
+      items: open
+          .map((g) => DropdownMenuItem(
+                value: g['id'] as int,
+                child: Text(
+                    'Kelompok ${g['no']} · ${g['pembina']} · ${g['cnt']}/30',
+                    style: const TextStyle(fontSize: 13)),
+              ))
+          .toList(),
+      onChanged: (v) => setState(() => _pickedGroup = v),
+    );
   }
 
   void _openReader(Map<dynamic, dynamic> a) {
@@ -105,15 +150,23 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
               const SizedBox(height: 8),
               if (status == null) ...[
                 Text('Juz ini kosong.', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
-                if (_myAssignments == null || _myAssignments!.isEmpty)
+                if (_myAssignments == null || _myAssignments!.isEmpty) ...[
+                  if (_groups.length > 1)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: _groupPicker(),
+                    ),
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: ElevatedButton.icon(
-                      onPressed: () { Navigator.pop(ctx); _claimJuz(j['juz'] as int); },
+                      onPressed: _pickedGroup == null
+                          ? null
+                          : () { Navigator.pop(ctx); _claimJuz(j['juz'] as int, _pickedGroup!); },
                       icon: const Icon(Icons.add_circle_outline, size: 18),
                       label: const Text('Ambil Juz Ini'),
                     ),
                   ),
+                ],
               ] else ...[
                 Text(
                   isMine ? 'Anda' : '${j['owner_name'] ?? '—'}',
