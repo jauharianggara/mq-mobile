@@ -96,9 +96,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         _sectionTitle('Khatmil Aktif'),
                         ...(_data!['khatmil'] as List).map<Widget>((k) => Card(
                           child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: AppColors.gold.withValues(alpha: 0.2),
-                              child: Text('J${k['juz']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.gold)),
+                            leading: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.gold.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text('Juz ${k['juz']}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.goldDark)),
                             ),
                             title: Text(k['campaign_name'], style: const TextStyle(fontWeight: FontWeight.w500)),
                             subtitle: Text('Juz ${k['juz']} · ${k['pages_read']} hal · ${k['minutes_read']} mnt'),

@@ -57,9 +57,13 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
                         const SizedBox(height: 8),
                         ...(_myAssignments!).map<Widget>((a) => Card(
                           child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: AppColors.gold.withValues(alpha: 0.15),
-                              child: Text('J${a['juz']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.gold)),
+                            leading: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.gold.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text('Juz ${a['juz']}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.goldDark)),
                             ),
                             title: Text(a['campaign_name'], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                             subtitle: Text(

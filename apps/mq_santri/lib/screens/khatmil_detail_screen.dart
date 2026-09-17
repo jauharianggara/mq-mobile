@@ -300,9 +300,13 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: isCompleted ? AppColors.success.withValues(alpha: 0.15) : AppColors.gold.withValues(alpha: 0.15),
-              child: Text('J${a['juz']}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isCompleted ? AppColors.success : AppColors.gold)),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: isCompleted ? AppColors.success.withValues(alpha: 0.15) : AppColors.gold.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text('Juz ${a['juz']}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: isCompleted ? AppColors.success : AppColors.goldDark)),
             ),
             const SizedBox(width: 10),
             Expanded(

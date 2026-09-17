@@ -135,16 +135,18 @@ class _KhatmilBinaanDetailScreenState extends State<KhatmilBinaanDetailScreen> {
                           color: done ? AppColors.success.withValues(alpha: 0.07) : null,
                           child: ListTile(
                             dense: true,
-                            leading: SizedBox(
-                              width: 44,
-                              child: Center(
-                                child: Text('J${i + 1}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 13,
-                                      color: done ? AppColors.success : AppColors.primary,
-                                    )),
+                            leading: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: done ? AppColors.success.withValues(alpha: 0.12) : AppColors.primary.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(8),
                               ),
+                              child: Text('Juz ${i + 1}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12,
+                                    color: done ? AppColors.success : AppColors.primary,
+                                  )),
                             ),
                             title: kosong
                                 ? Text('Belum diambil santri mana pun',
