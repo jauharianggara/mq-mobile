@@ -90,6 +90,14 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
     );
   }
 
+  /// Tanggal Indonesia ringkas: "1 Sep 2026" (null → '-').
+  String _fmt(String? iso) {
+    final d = iso == null || iso.isEmpty ? null : DateTime.tryParse(iso)?.toLocal();
+    if (d == null) return '-';
+    const bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    return '${d.day} ${bulan[d.month - 1]} ${d.year}';
+  }
+
   Widget _campaignCard(Map<dynamic, dynamic> c) {
     final pct = (c['progress_pct'] as num? ?? 0).toDouble();
     final isActive = c['status'] == 'ACTIVE';
@@ -120,7 +128,7 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
               const SizedBox(height: 4),
               Text(
                 '${c['mode'] == 'PARALLEL' ? 'Paralel' : 'Bergiliran'} · ${c['participants']} peserta'
-                '${(c['period_start'] as String?) != null && (c['period_start'] as String).isNotEmpty ? ' · ${c['period_start']}${(c['period_end'] as String?) != null && (c['period_end'] as String).isNotEmpty ? '–${c['period_end']}' : ''}' : ''}',
+                '${(c['period_start'] as String?) != null && (c['period_start'] as String).isNotEmpty && (c['period_end'] as String?) != null && (c['period_end'] as String).isNotEmpty ? ' · ${_fmt(c['period_start'] as String?)} – ${_fmt(c['period_end'] as String?)}' : ''}',
                 style: TextStyle(fontSize: 11, color: Colors.grey[600]),
               ),
               const SizedBox(height: 10),

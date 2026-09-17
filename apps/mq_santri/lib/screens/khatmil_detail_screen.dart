@@ -234,6 +234,14 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
     );
   }
 
+  /// Tanggal Indonesia ringkas: "1 Sep 2026".
+  String _fmt(String? iso) {
+    final d = iso == null || iso.isEmpty ? null : DateTime.tryParse(iso)?.toLocal();
+    if (d == null) return '';
+    const bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    return '${d.day} ${bulan[d.month - 1]} ${d.year}';
+  }
+
   /// Strip progres campaign (plan F3) — bar + angka ringkas.
   Widget _progressStrip() {
     final d = _detail!;
@@ -241,9 +249,9 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
     final done = (d['juz_completed'] as num).toInt();
     final pct = (d['progress_pct'] as num).toDouble();
     final period = [
-      d['period_start'],
-      d['period_end'],
-    ].whereType<String>().where((s) => s.isNotEmpty).join(' – ');
+      _fmt(d['period_start'] as String?),
+      _fmt(d['period_end'] as String?),
+    ].where((s) => s.isNotEmpty).join(' – ');
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
