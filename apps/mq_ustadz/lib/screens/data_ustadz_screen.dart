@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:mq_shared/mq_shared.dart';
 
 import '../main.dart';
@@ -24,8 +25,11 @@ class _DataUstadzScreenState extends State<DataUstadzScreen> {
   final _anRek = TextEditingController();
   String? _gender;
   DateTime? _birthDate;
+  double? _pointLat, _pointLng;
+  final _pointLabel = TextEditingController();
   bool _loading = true;
   bool _saving = false;
+  bool _gettingFix = false;
 
   @override
   void initState() {
@@ -40,6 +44,7 @@ class _DataUstadzScreenState extends State<DataUstadzScreen> {
         api.myProfile(),
         api.ustadzDetail(),
         api.ustadzBank(),
+        api.ustadzPoint(),
       ]);
       if (!mounted) return;
       final p = results[0];
@@ -58,6 +63,10 @@ class _DataUstadzScreenState extends State<DataUstadzScreen> {
         _bank.text = (b?['bank_name'] as String?) ?? '';
         _noRek.text = (b?['bank_account_no'] as String?) ?? '';
         _anRek.text = (b?['bank_account_name'] as String?) ?? '';
+        final pt = results[3];
+        _pointLat = (pt?['lat'] as num?)?.toDouble();
+        _pointLng = (pt?['lng'] as num?)?.toDouble();
+        _pointLabel.text = (pt?['label'] as String?) ?? '';
         _loading = false;
       });
     } catch (e) {
@@ -105,6 +114,10 @@ class _DataUstadzScreenState extends State<DataUstadzScreen> {
           'bank_account_name': _anRek.text.trim(),
         });
       }
+      if (_pointLat != null && _pointLng != null) {
+        await api.ustadzSavePoint(
+            lat: _pointLat!, lng: _pointLng!, label: _pointLabel.text.trim());
+      }
       if (!mounted) return;
       _showSnack('Data tersimpan', success: true);
     } catch (e) {
@@ -112,6 +125,36 @@ class _DataUstadzScreenState extends State<DataUstadzScreen> {
       _showSnack(apiErrorMessage(e, 'Gagal menyimpan data'));
     } finally {
       if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  /// Ambil titik lokasi dari GPS saat ini — ustadz menekan saat berada di titik itu.
+  Future<void> _useGps() async {
+    if (_gettingFix) return;
+    setState(() => _gettingFix = true);
+    try {
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        _showSnack('Izin lokasi diperlukan.');
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+      if (!mounted) return;
+      setState(() {
+        _pointLat = pos.latitude;
+        _pointLng = pos.longitude;
+      });
+      _showSnack('Titik lokasi diambil dari posisi sekarang', success: true);
+    } catch (_) {
+      if (mounted) _showSnack('Tidak bisa mengambil lokasi. Coba lagi.');
+    } finally {
+      if (mounted) setState(() => _gettingFix = false);
     }
   }
 
@@ -129,7 +172,7 @@ class _DataUstadzScreenState extends State<DataUstadzScreen> {
 
   @override
   void dispose() {
-    for (final c in [_nama, _hp, _alamat, _kota, _pendidikan, _pengalaman, _bank, _noRek, _anRek]) {
+    for (final c in [_nama, _hp, _alamat, _kota, _pendidikan, _pengalaman, _bank, _noRek, _anRek, _pointLabel]) {
       c.dispose();
     }
     super.dispose();
@@ -184,6 +227,70 @@ class _DataUstadzScreenState extends State<DataUstadzScreen> {
                 _field('Pendidikan Terakhir', _pendidikan),
                 const SizedBox(height: 14),
                 _field('Pengalaman Mengajar', _pengalaman, maxLines: 3),
+                const SizedBox(height: 22),
+                Text('Titik Lokasi Saya',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.primary)),
+                const SizedBox(height: 4),
+                Text(
+                  'Santri mencari ustadz dari titik ini — bukan dari posisi HP Anda saat itu.',
+                  style: TextStyle(fontSize: 11, color: Theme.of(context).hintColor),
+                ),
+                const SizedBox(height: 10),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              (_pointLat != null) ? Icons.location_on : Icons.location_off,
+                              color: (_pointLat != null) ? AppColors.success : Colors.grey,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                (_pointLat != null && _pointLng != null)
+                                    ? 'Titik terpasang: ${_pointLat!.toStringAsFixed(5)}, ${_pointLng!.toStringAsFixed(5)}'
+                                    : 'Belum ada titik — Anda belum muncul di pencarian santri',
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: _pointLabel,
+                          decoration: const InputDecoration(
+                            labelText: 'Nama titik (opsional)',
+                            hintText: 'mis. Kampus mengaji',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _gettingFix ? null : _useGps,
+                            icon: _gettingFix
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2))
+                                : const Icon(Icons.my_location, size: 18),
+                            label: const Text('Ambil dari GPS sekarang'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 22),
                 Text('Rekening Penarikan',
                     style: TextStyle(

@@ -435,6 +435,36 @@ class MqApi {
     final d = await get('/me/ustadz/bank-account');
     return d is Map ? Map<String, dynamic>.from(d) : null;
   }
+
+  /// Titik rumah santri (titik default kunjungan).
+  Future<Map<String, dynamic>?> homePoint() async {
+    final d = await get('/me/home-point');
+    return d is Map ? Map<String, dynamic>.from(d) : null;
+  }
+
+  Future<void> saveHomePoint(
+      {required double lat, required double lng, String? addressLabel}) async {
+    await put('/me/home-point', data: {
+      'lat': lat,
+      'lng': lng,
+      'address_label': addressLabel,
+    });
+  }
+
+  /// Titik lokasi ustadz (satu titik, tanpa label kategori).
+  Future<Map<String, dynamic>?> ustadzPoint() async {
+    final d = await get('/me/ustadz/point');
+    return d is Map ? Map<String, dynamic>.from(d) : null;
+  }
+
+  Future<void> ustadzSavePoint(
+      {required double lat, required double lng, String? label}) async {
+    await put('/me/ustadz/point', data: {
+      'lat': lat,
+      'lng': lng,
+      'label': label,
+    });
+  }
   Future<Map<String, dynamic>?> ustadzSaveBank(Map<String, dynamic> data) async =>
       await put('/me/ustadz/bank-account', data: data);
 }

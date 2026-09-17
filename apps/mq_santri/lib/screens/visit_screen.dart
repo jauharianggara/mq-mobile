@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mq_shared/mq_shared.dart';
+import 'home_point_screen.dart';
 
 import '../main.dart';
 import 'visit_pick_ustadz_screen.dart';
@@ -25,37 +26,100 @@ class _VisitScreenState extends State<VisitScreen> {
     _load();
   }
 
-  /// Ambil lokasi santri dulu — daftar ustadz diurutkan dari yang terdekat.
+  /// Titik kunjungan: titik rumah tersimpan (default) atau titik lain via GPS.
+  /// TIDAK meminta izin GPS saat memakai titik rumah.
   Future<String?> _openPanggil() async {
-    LocationPermission perm;
+    Map<String, dynamic>? hp;
     try {
-      perm = await Geolocator.checkPermission();
+      hp = await api.homePoint();
+    } catch (_) {}
+    if (hp == null || mounted == false) {
+      // belum pernah set titik rumah -> wajib set dulu
+      if (!mounted) return 'Set titik rumah dulu untuk memesan.';
+      final ok = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePointScreen()),
+      );
+      if (ok != true) return null;
+      try {
+        hp = await api.homePoint();
+      } catch (_) {}
+      if (hp == null || !mounted) return null;
+    }
+    final homeLat = (hp['lat'] as num).toDouble();
+    final homeLng = (hp['lng'] as num).toDouble();
+    final homeLabel = (hp['address_label'] as String?) ?? 'Titik rumah saya';
+
+    // pilihan tempat kunjungan utk pesanan ini
+    String? choice;
+    if (mounted) {
+      choice = await showModalBottomSheet<String>(
+        context: context,
+        builder: (ctx) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text('Kunjungan dilakukan di mana?',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                const SizedBox(height: 12),
+                ListTile(
+                  leading: const Icon(Icons.home_outlined),
+                  title: const Text('Titik Rumah Saya'),
+                  subtitle: Text(homeLabel, style: const TextStyle(fontSize: 12)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.pop(ctx, 'home'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.place_outlined),
+                  title: const Text('Tempat lain'),
+                  subtitle: const Text('Pakai posisi saya sekarang',
+                      style: TextStyle(fontSize: 12)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.pop(ctx, 'other'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    if (choice == null || !mounted) return null;
+
+    double lat = homeLat, lng = homeLng;
+    String label = homeLabel;
+    if (choice == 'other') {
+      LocationPermission perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) {
         perm = await Geolocator.requestPermission();
       }
-      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        return 'Izin lokasi diperlukan untuk mencari ustadz terdekat.';
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        return 'Izin lokasi diperlukan untuk memakai posisi sekarang.';
       }
       final pos = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
       );
-      if (!mounted) return null;
-      final done = await Navigator.push<bool>(
-        context,
-        MaterialPageRoute(
-          builder: (_) => VisitPickUstadzScreen(
-            lat: pos.latitude,
-            lng: pos.longitude,
-            accuracyM: pos.accuracy.round(),
-            addressLabel: '',
-          ),
-        ),
-      );
-      if (done == true) _load();
-      return null;
-    } catch (_) {
-      return 'Tidak bisa mengambil lokasi. Coba lagi.';
+      lat = pos.latitude;
+      lng = pos.longitude;
+      label = 'Tempat lain (posisi saat memesan)';
     }
+
+    final done = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => VisitPickUstadzScreen(
+          lat: lat,
+          lng: lng,
+          accuracyM: 20,
+          addressLabel: label,
+        ),
+      ),
+    );
+    if (done == true) _load();
+    return null;
   }
 
   Future<void> _load() async {
