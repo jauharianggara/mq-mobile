@@ -81,10 +81,20 @@ class _HomePointScreenState extends State<HomePointScreen> {
       _showSnack('Ambil titik dulu (GPS saat Anda di rumah).');
       return;
     }
+    final titik = {
+      'lat': _lat,
+      'lng': _lng,
+      'address_label': _alamat.text.trim(),
+    };
+    // Mode pilih (saat booking "tempat lain"): kembalikan titik TANPA menyimpan
+    // sebagai titik rumah. Mode biasa: simpan sebagai titik rumah.
+    if (widget.selectMode) {
+      Navigator.pop(context, titik);
+      return;
+    }
     setState(() => _saving = true);
     try {
-      await api.saveHomePoint(
-          lat: _lat!, lng: _lng!, addressLabel: _alamat.text.trim());
+      await api.saveHomePoint(lat: _lat!, lng: _lng!, addressLabel: _alamat.text.trim());
       if (!mounted) return;
       _showSnack('Titik rumah tersimpan', success: true);
       Navigator.pop(context, true);
@@ -190,7 +200,11 @@ class _HomePointScreenState extends State<HomePointScreen> {
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                       : const Icon(Icons.save_outlined),
-                  label: Text(_saving ? 'Menyimpan…' : 'Simpan Titik Rumah'),
+                  label: Text(_saving
+                      ? 'Menyimpan…'
+                      : widget.selectMode
+                          ? 'Gunakan Titik Ini'
+                          : 'Simpan Titik Rumah'),
                 ),
                 const SizedBox(height: 12),
                 Text(

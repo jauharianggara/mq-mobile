@@ -86,7 +86,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _tile(Icons.notifications_outlined, 'Notifikasi', () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
                 }),
-                _tile(Icons.settings_outlined, 'Pengaturan', () {}),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: _logout,

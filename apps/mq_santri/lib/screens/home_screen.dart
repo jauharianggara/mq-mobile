@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
 
 import '../main.dart';
+import 'khatmil_detail_screen.dart';
 import 'notification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -96,6 +97,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         _sectionTitle('Khatmil Aktif'),
                         ...(_data!['khatmil'] as List).map<Widget>((k) => Card(
                           child: ListTile(
+                            onTap: (k['campaign_id'] as int?) != null
+                                ? () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => KhatmilDetailScreen(
+                                            campaignId: k['campaign_id'] as int)))
+                                : null,
                             leading: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                               decoration: BoxDecoration(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
+import 'juz_detail_screen.dart';
+import 'package:mq_shared/mq_shared.dart';
 
 import '../main.dart';
 import 'khatmil_leaderboard_screen.dart';
@@ -76,40 +78,7 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
   }
 
   /// Dropdown pilih kelompok (muncul bila campaign punya >1 kelompok).
-  int? _pickedGroup;
 
-  Widget _groupPicker() {
-    final open = _groups
-        .map((g) => {
-              'id': g['id'] as int,
-              'no': g['group_no'] as int,
-              'cnt': g['member_count'] as int,
-              'pembina': (g['pembina'] as String?) ?? 'Ustadz',
-            })
-        .where((g) => (g['cnt'] as int) < 30)
-        .toList();
-    if (_pickedGroup == null && open.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _pickedGroup == null && open.isNotEmpty) {
-          setState(() => _pickedGroup = open.first['id'] as int);
-        }
-      });
-    }
-    return DropdownButtonFormField<int>(
-      initialValue: _pickedGroup,
-      decoration: const InputDecoration(
-          labelText: 'Pilih kelompok', border: OutlineInputBorder()),
-      items: open
-          .map((g) => DropdownMenuItem(
-                value: g['id'] as int,
-                child: Text(
-                    'Kelompok ${g['no']} · ${g['pembina']} · ${g['cnt']}/30',
-                    style: const TextStyle(fontSize: 13)),
-              ))
-          .toList(),
-      onChanged: (v) => setState(() => _pickedGroup = v),
-    );
-  }
 
   void _openReader(Map<dynamic, dynamic> a) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => KhatmilReaderScreen(assignment: a)))
@@ -119,105 +88,6 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
   void _openManual(Map<dynamic, dynamic> a) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => KhatmilManualProgressScreen(assignment: a)))
         .then((_) => _load());
-  }
-
-  /// Bottom sheet info juz — nama PEMILIK + posisi + aksi (plan F3).
-  void _showJuzSheet(dynamic j) {
-    final status = j['status'];
-    final isMine = (_myAssignments ?? []).any((a) => a['juz'] == j['juz'] && a['status'] != 'COMPLETED');
-    final mine = (_myAssignments ?? []).cast<Map<dynamic, dynamic>?>().firstWhere((a) => a!['juz'] == j['juz'], orElse: () => null);
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text('Juz ${j['juz']}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-                  const SizedBox(width: 8),
-                  if (status == 'COMPLETED')
-                    StatusBadge(status: 'COMPLETED')
-                  else if (status != null)
-                    StatusBadge(status: status)
-                  else
-                    Text('kosong', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
-                ],
-              ),
-              const SizedBox(height: 8),
-              if (status == null) ...[
-                Text('Juz ini kosong.', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
-                if (_myAssignments == null || _myAssignments!.isEmpty) ...[
-                  if (_groups.length > 1)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: _groupPicker(),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: ElevatedButton.icon(
-                      onPressed: _pickedGroup == null
-                          ? null
-                          : () { Navigator.pop(ctx); _claimJuz(j['juz'] as int, _pickedGroup!); },
-                      icon: const Icon(Icons.add_circle_outline, size: 18),
-                      label: const Text('Ambil Juz Ini'),
-                    ),
-                  ),
-                ],
-              ] else ...[
-                Text(
-                  isMine ? 'Anda' : '${j['owner_name'] ?? '—'}',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[700]),
-                ),
-                if (status != 'COMPLETED') ...[
-                  if (j['current_surah'] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        'Posisi bacaan: QS ${j['current_surah']}:${j['current_ayah']} · ${j['progress_pct'] ?? 0}%',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[700]),
-                      ),
-                    )
-                  else
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text('Belum ada laporan posisi bacaan', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
-                    ),
-                ] else if (j['completed_at'] != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text('Selesai & terverifikasi: ${j['completed_at'].toString().substring(0, 10)}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                  ),
-                if (isMine && mine != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () { Navigator.pop(ctx); _openReader(mine); },
-                            icon: const Icon(Icons.play_arrow, size: 18),
-                            label: const Text('Lanjut Baca'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        OutlinedButton(
-                          onPressed: () { Navigator.pop(ctx); _openManual(mine); },
-                          style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 14)),
-                          child: const Text('✍️'),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   void _showSnack(String msg, {bool success = false}) {
@@ -426,7 +296,23 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
             // Juz milik sendiri (sedang dibaca) = emas solid + border tebal —
             // paling menonjol dibanding juz aktif orang lain (oranye muda).
             return GestureDetector(
-              onTap: () => _showJuzSheet(j),
+              onTap: () async {
+                final mine = (_myAssignments ?? [])
+                    .cast<Map<dynamic, dynamic>?>()
+                    .firstWhere((a) => a!['juz'] == j['juz'], orElse: () => null);
+                final claimed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => JuzDetailScreen(
+                      campaignId: widget.campaignId,
+                      juz: j,
+                      groups: _groups,
+                      myAssignment: mine,
+                    ),
+                  ),
+                );
+                if (claimed == true) _load();
+              },
               child: Container(
                 decoration: BoxDecoration(
                   color: isMine

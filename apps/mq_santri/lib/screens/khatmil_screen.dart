@@ -57,6 +57,14 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
                         const SizedBox(height: 8),
                         ...(_myAssignments!).map<Widget>((a) => Card(
                           child: ListTile(
+                            onTap: () async {
+                              await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => KhatmilDetailScreen(
+                                          campaignId: a['campaign_id'] as int)));
+                              _load();
+                            },
                             leading: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                               decoration: BoxDecoration(
@@ -73,10 +81,6 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
                               style: const TextStyle(fontSize: 11.5),
                             ),
                             trailing: StatusBadge(status: a['status']),
-                            onTap: () async {
-                              await Navigator.push(context, MaterialPageRoute(builder: (_) => KhatmilDetailScreen(campaignId: a['campaign_id'])));
-                              _load();
-                            },
                           ),
                         )),
                         const SizedBox(height: 16),
@@ -109,10 +113,10 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: isActive ? () async {
+        onTap: () async {
           await Navigator.push(context, MaterialPageRoute(builder: (_) => KhatmilDetailScreen(campaignId: c['id'])));
           _load();
-        } : null,
+        },
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(

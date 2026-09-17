@@ -32,12 +32,12 @@
     "hash": "8444101254d95e776ba118cd9873847a"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/home_screen.dart": {
-    "mtime": 1789616848855.3955,
-    "hash": "41f938f5ac804c69cb68599e70f56a97"
+    "mtime": 1789639114126.84,
+    "hash": "30c261e0dac59b25582e385e9b11454c"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/khatmil_detail_screen.dart": {
-    "mtime": 1789616848924.2925,
-    "hash": "bd4012958c50fcaf069ed0c74e398cac"
+    "mtime": 1789639114126.84,
+    "hash": "0ec846672b5a2b8fc6fe76d2666de3cf"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/khatmil_leaderboard_screen.dart": {
     "mtime": 1789466458676.959,
@@ -52,8 +52,8 @@
     "hash": "b74313e469e9bf90b9f541344dc7c2fd"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/khatmil_screen.dart": {
-    "mtime": 1789616848927.299,
-    "hash": "8380741e1bf2c421ac1a15dbc1407b0b"
+    "mtime": 1789639114126.84,
+    "hash": "3f5eb7634b42a47608d127a16f924512"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/login_screen.dart": {
     "mtime": 1789559743780.2998,
@@ -64,8 +64,8 @@
     "hash": "8be68b2ce890e6c696b202d99ce2079d"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/profile_screen.dart": {
-    "mtime": 1789614357655.6208,
-    "hash": "03dc24b87dbcb266271b50ba11b7c8bf"
+    "mtime": 1789639114126.84,
+    "hash": "b937d117934d298d3792cc5068160074"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/quran_reader_screen.dart": {
     "mtime": 1789451296920.9758,
@@ -80,8 +80,8 @@
     "hash": "b7d0f24fe1dcf9527c173f3483621ac6"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/shell_screen.dart": {
-    "mtime": 1789514285062.3733,
-    "hash": "1ad78636517def2cd8efc5e29701dc45"
+    "mtime": 1789621049976.7717,
+    "hash": "47e20c62dbe413a691ae200dc1ea3dbe"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/tanya_screen.dart": {
     "mtime": 1789428845351.2842,
@@ -100,12 +100,12 @@
     "hash": "5c86f702b0be90176d751751e3a19760"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/visit_screen.dart": {
-    "mtime": 1789555845186.1692,
-    "hash": "e407b97a72cab3b2eca54d92d7479323"
+    "mtime": 1789621049976.7717,
+    "hash": "178ef2274589062b232004c6195e39bb"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/visit_status_screen.dart": {
-    "mtime": 1789590952888.1372,
-    "hash": "8d18ae632757524b67e79679b1379c87"
+    "mtime": 1789638150372.1785,
+    "hash": "890a49eea54c14832de819995d790dd9"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/services/deeplink.dart": {
     "mtime": 1789561550383.9753,
@@ -136,8 +136,8 @@
     "hash": "a58d1bbb679bb88a3c53d8883c31a484"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/home_screen.dart": {
-    "mtime": 1789559274777.4263,
-    "hash": "05e2c997c5f507ada9df439d08fd690d"
+    "mtime": 1789621049976.7717,
+    "hash": "5e30329d34ccd79d3f0579b520e095d8"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/khatmil_ustadz_screen.dart": {
     "mtime": 1789616491624.5242,
@@ -160,8 +160,8 @@
     "hash": "42c3d4625c2aa3b2c2f003d2af56ba20"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/shell_screen.dart": {
-    "mtime": 1789559256073.23,
-    "hash": "09e81f7836b088f5e297ef37f9f14467"
+    "mtime": 1789621049976.7717,
+    "hash": "b655712f29b2cad4d538f249b92b2775"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/tanya_screen.dart": {
     "mtime": 1789431068274.5215,
@@ -176,12 +176,12 @@
     "hash": "3eef5faa8597a47695e090dc6d1ccd02"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/visit_incoming_screen.dart": {
-    "mtime": 1789559241150.7979,
-    "hash": "184c0aaeaa65f27d740ff2b7dcfbb61c"
+    "mtime": 1789622869137.5837,
+    "hash": "cbce2641872bf02df3dcb622be895581"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/visit_request_screen.dart": {
-    "mtime": 1789592083113.3516,
-    "hash": "7a75811710a33c4bf0fa43485099c841"
+    "mtime": 1789637754212.1206,
+    "hash": "b8ee9a39ff96dd226b3d1b7ebef92462"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/visit_settings_screen.dart": {
     "mtime": 1789561590300.4856,
@@ -196,8 +196,8 @@
     "hash": "5338d2cee56f570638e7f2cca86fca31"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/src/api/mq_api.dart": {
-    "mtime": 1789614875276.2532,
-    "hash": "10a319aa403bce6341ee6a4485192ab3"
+    "mtime": 1789618587278.6313,
+    "hash": "0552a0df90452a10d90ddb7399aef402"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/src/session/session_store.dart": {
     "mtime": 1789524502177.061,
@@ -300,8 +300,8 @@
     "hash": "67035fd89b4d0090249b34977318f277"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/.graphify/GRAPH_REPORT.md": {
-    "mtime": 1789616867039.8455,
-    "hash": "06eaf35b14d7952570e1e8e47596e2a2"
+    "mtime": 1789639092167.7085,
+    "hash": "2523e5cda04ffd1f71c39715a5a57f9c"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/payout_screen.dart": {
     "mtime": 1789614357661.1333,
@@ -400,11 +400,15 @@
     "hash": "cdeffdb31188917c6e8732ec6f3defd0"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/data_ustadz_screen.dart": {
-    "mtime": 1789614314067.9414,
-    "hash": "011555b01d96fb17abda8104facebb29"
+    "mtime": 1789618624536.867,
+    "hash": "141e8f9ffb0747e1521ba9cbe47cebc2"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/khatmil_binaan_detail_screen.dart": {
     "mtime": 1789616848941.2002,
     "hash": "3c24e23f6e55591f1def5f16a618e5f4"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/home_point_screen.dart": {
+    "mtime": 1789639114665.122,
+    "hash": "6f674c740526f0f1c3f3f35860dcbfe4"
   }
 }
