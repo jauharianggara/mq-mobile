@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mq_shared/mq_shared.dart';
 
 import '../main.dart';
+import 'khatmil_binaan_detail_screen.dart';
 
 /// Tab Khatmil ustadz — MEMANTAU progres (bukan ikut khatam):
 /// penugasan pembina menunggu ACC + khatmil yang dibina + khatmil aktif umum.
@@ -185,9 +186,24 @@ class _KhatmilUstadzScreenState extends State<KhatmilUstadzScreen> {
     final filled = (g['filled'] as num?)?.toInt() ?? 0;
     final completed = (g['completed'] as num?)?.toInt() ?? 0;
     final khatam = g['khatam'] == true || completed >= 30;
+    final periode = [_fmt(g['period_start'] as String?), _fmt(g['period_end'] as String?)]
+        .where((s) => s.isNotEmpty && s != '-')
+        .join(' – ');
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => KhatmilBinaanDetailScreen(
+                      campaignId: (g['campaign_id'] as num).toInt(),
+                      campaignName: g['campaign_name'] ?? 'Khatmil',
+                      groupNo: (g['group_no'] as num?)?.toInt() ?? 1,
+                      periodStart: g['period_start'] as String?,
+                      periodEnd: g['period_end'] as String?,
+                    ))),
+        child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,6 +218,9 @@ class _KhatmilUstadzScreenState extends State<KhatmilUstadzScreen> {
               ],
             ),
             const SizedBox(height: 8),
+            if (periode.isNotEmpty)
+              Text(periode, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            const SizedBox(height: 6),
             Text('$filled dari 30 juz terisi · $completed juz selesai',
                 style: const TextStyle(fontSize: 12)),
             const SizedBox(height: 8),
@@ -210,18 +229,26 @@ class _KhatmilUstadzScreenState extends State<KhatmilUstadzScreen> {
               minHeight: 6,
               borderRadius: BorderRadius.circular(4),
             ),
+            const SizedBox(height: 6),
+            Text('Ketuk untuk lihat progres 30 juz santri',
+                style: TextStyle(fontSize: 10, color: Colors.grey[500])),
           ],
         ),
+      ),
       ),
     );
   }
 
   Widget _aktifCard(Map<String, dynamic> c) {
+    final periode = [_fmt(c['period_start'] as String?), _fmt(c['period_end'] as String?)]
+        .where((s) => s.isNotEmpty && s != '-')
+        .join(' – ');
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         title: Text(c['name'] ?? '-', style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text('${_fmt(c['period_start'] as String?)} – ${_fmt(c['period_end'] as String?)}',
+        subtitle: Text(
+            periode.isNotEmpty ? periode : 'Periode belum diatur pengurus',
             style: const TextStyle(fontSize: 12)),
         trailing: StatusBadge(status: c['status'] ?? ''),
       ),
