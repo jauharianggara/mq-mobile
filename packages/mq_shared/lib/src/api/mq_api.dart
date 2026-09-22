@@ -84,7 +84,12 @@ class MqApi {
       baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 30),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        // Cloudflare browser-integrity-check menolak UA 'dio/x' (1010) —
+        // samakan dengan UA dart:io standar biar presign PUT lolos.
+        'User-Agent': 'Dart/3.5 (dart:io)',
+      },
     ));
 
     dio.interceptors.addAll([
@@ -192,13 +197,29 @@ class MqApi {
       'mime_type': mime,
       'byte_size': bytes.length,
     });
-    if (up == null) return null;
-    await dio.put(
-      up['upload_url'],
-      data: Stream.fromIterable([bytes]),
-      options: Options(headers: {'Content-Type': mime}),
-    );
-    await post('/media/uploads/${up['media_id']}/complete');
+    if (up == null) {
+      debugPrint('[uploadImageBytes] presign gagal (null)');
+      return null;
+    }
+    debugPrint('[uploadImageBytes] presign ok id=${up['media_id']} url=${up['upload_url']}');
+    try {
+      final res = await dio.put(
+        up['upload_url'],
+        data: bytes,
+        options: Options(headers: {'Content-Type': mime}),
+      );
+      debugPrint('[uploadImageBytes] PUT status=${res.statusCode}');
+    } catch (e) {
+      debugPrint('[uploadImageBytes] PUT gagal: $e');
+      rethrow;
+    }
+    try {
+      await post('/media/uploads/${up['media_id']}/complete');
+      debugPrint('[uploadImageBytes] complete ok');
+    } catch (e) {
+      debugPrint('[uploadImageBytes] complete gagal: $e');
+      rethrow;
+    }
     return up['media_id'] as int;
   }
 
