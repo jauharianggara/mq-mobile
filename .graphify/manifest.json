@@ -32,12 +32,12 @@
     "hash": "8444101254d95e776ba118cd9873847a"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/home_screen.dart": {
-    "mtime": 1789639114126.84,
-    "hash": "30c261e0dac59b25582e385e9b11454c"
+    "mtime": 1789639615355.5676,
+    "hash": "5d094d9c934a5dbe316d1f3e6ec9be61"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/khatmil_detail_screen.dart": {
-    "mtime": 1789639114126.84,
-    "hash": "0ec846672b5a2b8fc6fe76d2666de3cf"
+    "mtime": 1790061032309.8308,
+    "hash": "1b06920a76ff13b1089fe9c683c6b403"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/khatmil_leaderboard_screen.dart": {
     "mtime": 1789466458676.959,
@@ -52,8 +52,8 @@
     "hash": "b74313e469e9bf90b9f541344dc7c2fd"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/khatmil_screen.dart": {
-    "mtime": 1789639114126.84,
-    "hash": "3f5eb7634b42a47608d127a16f924512"
+    "mtime": 1790061161549.8596,
+    "hash": "29abadc3f656bc0b2f6a17deabf308e6"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/login_screen.dart": {
     "mtime": 1789559743780.2998,
@@ -64,8 +64,8 @@
     "hash": "8be68b2ce890e6c696b202d99ce2079d"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/profile_screen.dart": {
-    "mtime": 1789639114126.84,
-    "hash": "b937d117934d298d3792cc5068160074"
+    "mtime": 1790060972929.2131,
+    "hash": "b1d2f5c38c5ef560a91ac8c598d42eb4"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/quran_reader_screen.dart": {
     "mtime": 1789451296920.9758,
@@ -96,8 +96,8 @@
     "hash": "388b1897468092b64e0137ec4bda6b8d"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/visit_pick_ustadz_screen.dart": {
-    "mtime": 1789559241149.401,
-    "hash": "5c86f702b0be90176d751751e3a19760"
+    "mtime": 1790061040716.5366,
+    "hash": "2b0fac3b56c8a2cda9f3e3c91ba77683"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/visit_screen.dart": {
     "mtime": 1789621049976.7717,
@@ -148,8 +148,8 @@
     "hash": "a02e2cce58f6424c0214b3a5fe00e381"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/profile_screen.dart": {
-    "mtime": 1789614357655.6208,
-    "hash": "f6498b1dbba2ad349ee0b404eab6e592"
+    "mtime": 1790060983898.0918,
+    "hash": "6f418c0410b4afab336a73d4f7222d04"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/setoran_review_screen.dart": {
     "mtime": 1789431055215.6348,
@@ -192,12 +192,12 @@
     "hash": "ecdcb0e2d5c460f9d0264791c39aa3f3"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/mq_shared.dart": {
-    "mtime": 1789524528748.2937,
-    "hash": "5338d2cee56f570638e7f2cca86fca31"
+    "mtime": 1790060937127.3723,
+    "hash": "0f6435404ad4cf617e2635afcb293e41"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/src/api/mq_api.dart": {
-    "mtime": 1789618587278.6313,
-    "hash": "0552a0df90452a10d90ddb7399aef402"
+    "mtime": 1790060927733.3179,
+    "hash": "b4ade9dff3fde941127b686c4a93ec7b"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/lib/src/session/session_store.dart": {
     "mtime": 1789524502177.061,
@@ -228,8 +228,8 @@
     "hash": "66d03d7647c8e438164feaf5b922d44a"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/pubspec.yaml": {
-    "mtime": 1789593184069.7864,
-    "hash": "1397e8973a9ac772c2cdd1ec5d8ff668"
+    "mtime": 1789820670087.472,
+    "hash": "8659648efef7203d44033ec5c3e180e5"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/README.md": {
     "mtime": 1789426227470.388,
@@ -240,12 +240,12 @@
     "hash": "66d03d7647c8e438164feaf5b922d44a"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/pubspec.yaml": {
-    "mtime": 1789559652272.3442,
-    "hash": "e3a3d9e2cdb9000063772839a7a2f142"
+    "mtime": 1789820708361.434,
+    "hash": "7c311ee0c87e48542e320a9ba43e4bbb"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/packages/mq_shared/pubspec.yaml": {
-    "mtime": 1789426315695.0977,
-    "hash": "c243b429094aeae9f931fdc06c9f8626"
+    "mtime": 1790060937127.3723,
+    "hash": "af86cecb4b6f154f4d0b4c46274d24d4"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/android/app/src/main/res/mipmap-hdpi/ic_launcher.png": {
     "mtime": 1767871495723.8525,
@@ -300,8 +300,8 @@
     "hash": "67035fd89b4d0090249b34977318f277"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/.graphify/GRAPH_REPORT.md": {
-    "mtime": 1789639092167.7085,
-    "hash": "2523e5cda04ffd1f71c39715a5a57f9c"
+    "mtime": 1790061051837.735,
+    "hash": "f826bc282e9ebe08571b56a0b3156706"
   },
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/lib/screens/payout_screen.dart": {
     "mtime": 1789614357661.1333,
@@ -410,5 +410,17 @@
   "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/home_point_screen.dart": {
     "mtime": 1789639114665.122,
     "hash": "6f674c740526f0f1c3f3f35860dcbfe4"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/lib/screens/juz_detail_screen.dart": {
+    "mtime": 1789639646121.6133,
+    "hash": "75b8bf368fbc82cc05d942533f96ed2c"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_santri/shorebird.yaml": {
+    "mtime": 1789820669853.4795,
+    "hash": "0a9e74fac260b1d7d5f0fc132bb9f791"
+  },
+  "C:/Users/jauha/ZCodeProject/mq-mobile/apps/mq_ustadz/shorebird.yaml": {
+    "mtime": 1789820708232.808,
+    "hash": "cef007050668daa2664b009bdeba45d0"
   }
 }

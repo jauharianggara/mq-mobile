@@ -1,25 +1,25 @@
-# Graph Report - .  (2026-09-17)
+# Graph Report - .  (2026-09-22)
 
 ## Corpus Check
-- 103 files · ~99,644 words
+- 106 files · ~100,647 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 408 nodes · 362 edges · 43 communities detected
+- 413 nodes · 366 edges · 44 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
-- Edge kinds: contains: 362
+- Edge kinds: contains: 366
 
 
 ## Input Scope
 - Requested: auto
 - Resolved: committed (source: default-auto)
-- Included files: 103 · Candidates: 269
-- Excluded: 16 untracked · 16946 ignored · 0 sensitive · 0 missing committed
+- Included files: 106 · Candidates: 292
+- Excluded: 11 untracked · 16960 ignored · 0 sensitive · 0 missing committed
 - Recommendation: Use --scope all or graphify.yaml inputs.corpus for a knowledge-base folder.
 
 ## Graph Freshness
-- Built from Git commit: `f61494f`
+- Built from Git commit: `e3a3d0e`
 - Compare this hash to `git rev-parse HEAD` before trusting freshness-sensitive graph output.
 ## God Nodes (most connected - your core abstractions)
 1. `MqSantriApp` - 1 edges
@@ -66,6 +66,10 @@ Nodes (2): HomePointScreen, _HomePointScreenState
 Cohesion: 0.40
 Nodes (2): HomeScreen, _HomeScreenState
 
+### Community 37 - "Community 37"
+Cohesion: 0.50
+Nodes (2): JuzDetailScreen, _JuzDetailScreenState
+
 ### Community 4 - "Community 4"
 Cohesion: 0.14
 Nodes (2): KhatmilDetailScreen, _KhatmilDetailScreenState
@@ -86,7 +90,7 @@ Nodes (2): KhatmilReaderScreen, _KhatmilReaderScreenState
 Cohesion: 0.33
 Nodes (2): KhatmilScreen, _KhatmilScreenState
 
-### Community 37 - "Community 37"
+### Community 38 - "Community 38"
 Cohesion: 0.50
 Nodes (2): LoginScreen, _LoginScreenState
 
@@ -106,11 +110,11 @@ Nodes (2): QuranReaderScreen, _QuranReaderScreenState
 Cohesion: 0.33
 Nodes (2): QuranScreen, _QuranScreenState
 
-### Community 38 - "Community 38"
+### Community 39 - "Community 39"
 Cohesion: 0.50
 Nodes (2): RegisterScreen, _RegisterScreenState
 
-### Community 41 - "Community 41"
+### Community 42 - "Community 42"
 Cohesion: 0.67
 Nodes (2): ShellScreen, _ShellScreenState
 
@@ -194,15 +198,15 @@ Nodes (1): MqApi
 Cohesion: 0.40
 Nodes (1): MqSessionStore
 
-### Community 42 - "Community 42"
+### Community 43 - "Community 43"
 Cohesion: 0.67
 Nodes (2): AppColors, AppTheme
 
-### Community 39 - "Community 39"
+### Community 40 - "Community 40"
 Cohesion: 0.50
 Nodes (3): StatusBadge, KpiCard, EmptyState
 
-### Community 40 - "Community 40"
+### Community 41 - "Community 41"
 Cohesion: 0.50
 Nodes (2): ConnectionErrorScreen, _ConnectionErrorScreenState
 
@@ -211,7 +215,7 @@ Cohesion: 0.29
 Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
 
 ## Knowledge Gaps
-- **91 isolated node(s):** `MqSantriApp`, `SplashScreen`, `_SplashScreenState`, `ForceUpdateScreen`, `DataSayaScreen` (+86 more)
+- **93 isolated node(s):** `MqSantriApp`, `SplashScreen`, `_SplashScreenState`, `ForceUpdateScreen`, `DataSayaScreen` (+88 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **Thin community `Community 16`** (2 nodes): `DataSayaScreen`, `_DataSayaScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -225,6 +229,8 @@ Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 35`** (2 nodes): `HomeScreen`, `_HomeScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 37`** (2 nodes): `JuzDetailScreen`, `_JuzDetailScreenState`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 4`** (2 nodes): `KhatmilDetailScreen`, `_KhatmilDetailScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 27`** (2 nodes): `KhatmilLeaderboardScreen`, `_KhatmilLeaderboardScreenState`
@@ -235,7 +241,7 @@ Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 33`** (2 nodes): `KhatmilScreen`, `_KhatmilScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 37`** (2 nodes): `LoginScreen`, `_LoginScreenState`
+- **Thin community `Community 38`** (2 nodes): `LoginScreen`, `_LoginScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 23`** (2 nodes): `NotificationScreen`, `_NotificationScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -245,9 +251,9 @@ Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 34`** (2 nodes): `QuranScreen`, `_QuranScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 38`** (2 nodes): `RegisterScreen`, `_RegisterScreenState`
+- **Thin community `Community 39`** (2 nodes): `RegisterScreen`, `_RegisterScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 41`** (2 nodes): `ShellScreen`, `_ShellScreenState`
+- **Thin community `Community 42`** (2 nodes): `ShellScreen`, `_ShellScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 29`** (2 nodes): `TanyaScreen`, `_TanyaScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -287,16 +293,16 @@ Nodes (3): ConnectivityBanner, _ConnectivityBannerState, ForceUpdateScreen
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 36`** (1 nodes): `MqSessionStore`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 42`** (2 nodes): `AppColors`, `AppTheme`
+- **Thin community `Community 43`** (2 nodes): `AppColors`, `AppTheme`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 40`** (2 nodes): `ConnectionErrorScreen`, `_ConnectionErrorScreenState`
+- **Thin community `Community 41`** (2 nodes): `ConnectionErrorScreen`, `_ConnectionErrorScreenState`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **What connects `MqSantriApp`, `SplashScreen`, `_SplashScreenState` to the rest of the system?**
-  _91 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _93 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 4` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**

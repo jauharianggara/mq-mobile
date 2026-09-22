@@ -62,13 +62,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // Avatar + name
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: AppColors.gold.withValues(alpha: 0.15),
-                  child: Text(
-                    (_me?['full_name'] ?? _me?['email'] ?? 'U')[0].toUpperCase(),
-                    style: const TextStyle(fontSize: 32, color: AppColors.gold, fontWeight: FontWeight.w700),
+                // avatar + tombol edit foto (upload presign → PATCH /me)
+                GestureDetector(
+                  onTap: () => showAvatarPicker(
+                    context, api,
+                    hasPhoto: ((_me?['photo_url'] ?? '') as String).isNotEmpty,
+                    onChanged: () { _load(); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto profil diperbarui'))); },
+                  ),
+                  child: Stack(
+                    children: [
+                      MqAvatar(
+                        photoUrl: _me?['photo_url'],
+                        name: _me?['full_name'] ?? _me?['email'],
+                        radius: 48,
+                      ),
+                      Positioned(
+                        right: 0, bottom: 0,
+                        child: CircleAvatar(
+                          radius: 15,
+                          backgroundColor: AppColors.gold,
+                          child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 12),

@@ -103,8 +103,9 @@ class _VisitPickUstadzScreenState extends State<VisitPickUstadzScreen> {
                                   ),
                                 ),
                               ),
-                              leading: CircleAvatar(
-                                child: Text((u['full_name'] as String? ?? 'U')[0].toUpperCase()),
+                              leading: MqAvatar(
+                                photoUrl: u['photo_url'] as String?,
+                                name: u['full_name'] as String?,
                               ),
                               title: Text(u['full_name'] as String? ?? 'Ustadz',
                                   style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -212,10 +213,10 @@ class _UstadzProfilePageState extends State<UstadzProfilePage> {
         children: [
           Row(
             children: [
-              CircleAvatar(
+              MqAvatar(
+                photoUrl: u['photo_url'] as String?,
+                name: u['full_name'] as String?,
                 radius: 28,
-                child: Text((u['full_name'] as String? ?? 'U')[0].toUpperCase(),
-                    style: const TextStyle(fontSize: 22)),
               ),
               const SizedBox(width: 14),
               Expanded(

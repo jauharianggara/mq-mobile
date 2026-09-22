@@ -132,6 +132,19 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
                   child: ListView(
                     padding: const EdgeInsets.all(12),
                     children: [
+                      if (((_detail?['cover_url'] ?? '') as String).isNotEmpty)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            _detail!['cover_url'],
+                            height: 140,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                          ),
+                        ),
+                      if (((_detail?['cover_url'] ?? '') as String).isNotEmpty)
+                        const SizedBox(height: 12),
                       _progressStrip(),
                       const SizedBox(height: 12),
 

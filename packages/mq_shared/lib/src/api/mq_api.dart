@@ -182,6 +182,26 @@ class MqApi {
     return res.data['data'];
   }
 
+  // ============ media upload (presign 3-langkah) ============
+
+  /// Upload gambar (avatar dsb) → media_id READY, atau null saat gagal.
+  /// bytes sudah dikompres caller (image_picker maxWidth/quality).
+  Future<int?> uploadImageBytes(Uint8List bytes, String mime) async {
+    final up = await post('/media/uploads', data: {
+      'kind': 'IMAGE',
+      'mime_type': mime,
+      'byte_size': bytes.length,
+    });
+    if (up == null) return null;
+    await dio.put(
+      up['upload_url'],
+      data: Stream.fromIterable([bytes]),
+      options: Options(headers: {'Content-Type': mime}),
+    );
+    await post('/media/uploads/${up['media_id']}/complete');
+    return up['media_id'] as int;
+  }
+
   /// Cursor pagination helper.
   Future<({List<dynamic> items, String? nextCursor, bool hasMore})> getPage(
     String path, {

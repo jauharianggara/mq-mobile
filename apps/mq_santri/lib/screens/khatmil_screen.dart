@@ -109,19 +109,32 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
   Widget _campaignCard(Map<dynamic, dynamic> c) {
     final pct = (c['progress_pct'] as num? ?? 0).toDouble();
     final isActive = c['status'] == 'ACTIVE';
+    final cover = (c['cover_url'] ?? '') as String;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () async {
           await Navigator.push(context, MaterialPageRoute(builder: (_) => KhatmilDetailScreen(campaignId: c['id'])));
           _load();
         },
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (cover.isNotEmpty)
+              Image.network(
+                cover,
+                height: 110,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               Row(
                 children: [
                   Expanded(
@@ -161,8 +174,10 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
                   ),
                 ],
               ),
-            ],
-          ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
