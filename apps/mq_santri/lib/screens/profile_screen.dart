@@ -47,13 +47,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 // avatar + tombol edit foto (upload presign → PATCH /me)
-                GestureDetector(
-                  onTap: () => showAvatarPicker(
-                    context, api,
-                    hasPhoto: ((_user?['photo_url'] ?? '') as String).isNotEmpty,
-                    onChanged: () { _load(); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto profil diperbarui'))); },
-                  ),
-                  child: Stack(
+                Semantics(
+                  label: 'Foto profil — ketuk untuk ganti',
+                  button: true,
+                  excludeSemantics: true,
+                  child: Center(
+                  child: GestureDetector(
+                    onTap: () => showAvatarPicker(
+                      context, api,
+                      hasPhoto: ((_user?['photo_url'] ?? '') as String).isNotEmpty,
+                      onChanged: () { _load(); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto profil diperbarui'))); },
+                    ),
+                    child: Stack(
                     children: [
                       MqAvatar(
                         photoUrl: _user?['photo_url'],
@@ -70,6 +75,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                     ],
                   ),
+                  ),
+                ),
                 ),
                 const SizedBox(height: 12),
                 Text(

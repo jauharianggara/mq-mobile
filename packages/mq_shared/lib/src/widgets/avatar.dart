@@ -12,7 +12,11 @@ class MqAvatar extends StatelessWidget {
   final double radius;
   final double? fontSize;
 
-  const MqAvatar({super.key, this.photoUrl, this.name, this.radius = 20, this.fontSize});
+  /// Label accessibility/uiautomator — default "Foto <nama>".
+  /// Dipakai driver E2E utk tap-by-label (tanpa koordinat).
+  final String? semanticLabel;
+
+  const MqAvatar({super.key, this.photoUrl, this.name, this.radius = 20, this.fontSize, this.semanticLabel});
 
   String get _initial {
     final n = (name ?? '').trim();
@@ -34,18 +38,25 @@ class MqAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = (photoUrl ?? '').trim();
     final size = radius * 2;
-    if (url.isEmpty) return _plain();
-    return ClipOval(
-      child: Image.network(
-        url,
-        width: size,
-        height: size,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _plain(),
-        loadingBuilder: (context, child, progress) =>
-            progress == null ? child : SizedBox(width: size, height: size, child: const Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)))),
-      ),
-    );
+    Widget child;
+    if (url.isEmpty) {
+      child = _plain();
+    } else {
+      child = ClipOval(
+        child: Image.network(
+          url,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _plain(),
+          loadingBuilder: (context, child, progress) =>
+              progress == null ? child : SizedBox(width: size, height: size, child: const Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)))),
+        ),
+      );
+    }
+    final trimmedName = (name ?? '').trim();
+    final label = semanticLabel ?? (trimmedName.isNotEmpty ? 'Foto $trimmedName' : 'Foto profil');
+    return Semantics(excludeSemantics: true, label: label, child: child);
   }
 
   Widget _plain() => CircleAvatar(
