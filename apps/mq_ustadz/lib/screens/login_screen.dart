@@ -56,9 +56,13 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Image.asset('assets/icon/icon.png', width: 64, height: 64, fit: BoxFit.cover),
+              Semantics(
+                label: 'Logo MQ Ustadz',
+                excludeSemantics: true,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset('assets/icon/icon.png', width: 64, height: 64, fit: BoxFit.cover),
+                ),
               ),
               const SizedBox(height: 12),
               Text(
@@ -91,11 +95,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 onSubmitted: (_) => _login(),
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _loading ? null : _login,
-                child: _loading
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
-                    : const Text('Masuk', style: TextStyle(fontSize: 16)),
+              Semantics(
+                label: 'Tombol Masuk',
+                button: true,
+                excludeSemantics: true,
+                child: ElevatedButton(
+                  onPressed: _loading ? null : _login,
+                  child: _loading
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
+                      : const Text('Masuk', style: TextStyle(fontSize: 16)),
+                ),
               ),
             ],
           ),
