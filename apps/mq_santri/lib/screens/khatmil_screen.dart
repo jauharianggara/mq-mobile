@@ -123,12 +123,16 @@ class _KhatmilScreenState extends State<KhatmilScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (cover.isNotEmpty)
-              Image.network(
-                cover,
-                height: 110,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              Semantics(
+                label: 'Cover ${c['name']}',
+                excludeSemantics: true,
+                child: Image.network(
+                  cover,
+                  height: 110,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
               ),
             Padding(
               padding: const EdgeInsets.all(14),

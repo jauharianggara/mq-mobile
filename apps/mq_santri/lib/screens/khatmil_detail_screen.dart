@@ -135,12 +135,16 @@ class _KhatmilDetailScreenState extends State<KhatmilDetailScreen> {
                       if (((_detail?['cover_url'] ?? '') as String).isNotEmpty)
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            _detail!['cover_url'],
-                            height: 140,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                          child: Semantics(
+                            label: 'Cover ${_detail?['name'] ?? ''}',
+                            excludeSemantics: true,
+                            child: Image.network(
+                              _detail!['cover_url'],
+                              height: 140,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                            ),
                           ),
                         ),
                       if (((_detail?['cover_url'] ?? '') as String).isNotEmpty)
